@@ -32,7 +32,8 @@ telemetryRouter.post("/devices", requireAuth, requirePermission("assets:manage")
       ...input, tenantId: req.auth!.tenantId, credentialHash, createdBy: req.auth!.userId
     });
     await audit(req, "telemetry_device.provisioned", device.id, { deviceCode: device.deviceCode, assetId: device.assetId.toString() });
-    const { credentialHash: _credentialHash, ...safeDevice } = device.toObject();\n    res.status(201).json({ data: safeDevice, deviceCredential: credential, warning: "Copy this credential now. It is shown only once." });
+    const { credentialHash: _credentialHash, ...safeDevice } = device.toObject();
+    res.status(201).json({ data: safeDevice, deviceCredential: credential, warning: "Copy this credential now. It is shown only once." });
   } catch (error) { next(error); }
 });
 
@@ -95,11 +96,19 @@ telemetryRouter.get("/telemetry/stream", requireAuth, requirePermission("energy:
   res.setHeader("Cache-Control", "no-cache, no-transform");
   res.setHeader("Connection", "keep-alive");
   res.flushHeaders();
-  res.write(`event: ready\ndata: ${JSON.stringify({ connected: true })}\n\n`);
+  res.write(`event: ready
+data: ${JSON.stringify({ connected: true })}
+
+`);
   const listener = (message: { tenantId: string; event: unknown }) => {
-    if (message.tenantId === tenantId) res.write(`event: reading\ndata: ${JSON.stringify(message.event)}\n\n`);
+    if (message.tenantId === tenantId) res.write(`event: reading
+data: ${JSON.stringify(message.event)}
+
+`);
   };
   telemetryEvents.on("reading", listener);
-  const heartbeat = setInterval(() => res.write(": heartbeat\n\n"), 25_000);
+  const heartbeat = setInterval(() => res.write(": heartbeat
+
+"), 25_000);
   res.on("close", () => { clearInterval(heartbeat); telemetryEvents.off("reading", listener); });
 });
