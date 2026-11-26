@@ -44,7 +44,10 @@ export async function getEnergyAnalytics(input: {
   const rows = await TelemetryEvent.aggregate<EnergyBucket>([
     { $match: match },
     { $unwind: "$readings" },
-    { $match: { "readings.metric": { $in: ["energy_import", "energy_export", "active_power", "generation_power"] } } },
+    { $match: { $or: [
+      { "readings.metric": { $in: ["energy_import", "energy_export"] }, "readings.unit": { $in: ["Wh", "kWh"] } },
+      { "readings.metric": { $in: ["active_power", "generation_power"] }, "readings.unit": { $in: ["W", "kW"] } }
+    ] } },
     { $addFields: {
       bucket: { $dateToString: {
         format: input.granularity === "hour" ? "%Y-%m-%dT%H:00:00.000Z" : "%Y-%m-%d",
