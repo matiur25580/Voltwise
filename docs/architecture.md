@@ -76,3 +76,8 @@ Organization context is selected by a verified access-token claim and revalidate
 ## Invitation security boundary
 
 Organization invitations are tenant-scoped records with a cryptographically random one-time token. Only a SHA-256 token hash is persisted. Creation and revocation require member-management permission; acceptance requires an authenticated user whose normalized email matches the invitation target. The invitee receives only the role explicitly granted by the inviter, and the owner role is never assignable through invitations. The current API returns the plaintext token once to its trusted caller because an email delivery adapter is not yet configured; production deployment must connect a trusted mail provider and avoid exposing or logging that token.
+
+
+## Facility and asset registry
+
+The `Facility` and `EnergyAsset` collections are organization-scoped. All API queries include the tenant ID derived from the authenticated request context; asset creation verifies that the referenced facility belongs to the same tenant. Facility codes and asset tags are unique per organization. Parent facility references are tenant-validated and checked for cycles. Facilities are hard-deleted only when they have no assets or child facilities; energy assets are decommissioned through a soft lifecycle transition. Registry records and state changes are auditable. The registry is metadata only: telemetry ingestion, meter readings, and real-time device connectivity are intentionally separate capabilities.
