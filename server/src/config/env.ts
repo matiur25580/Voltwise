@@ -27,4 +27,9 @@ if (parsed.data.NODE_ENV === "production" && parsed.data.JWT_ACCESS_SECRET.start
   process.exit(1);
 }
 
+if (parsed.data.NODE_ENV === "production" && parsed.data.MQTT_BROKER_URL && !parsed.data.MQTT_BROKER_URL.startsWith("mqtts://")) {
+  console.error("MQTT_BROKER_URL must use mqtts:// in production.");
+  process.exit(1);
+}
+
 export const env = parsed.data;
