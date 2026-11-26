@@ -15,7 +15,7 @@
 - [x] Organization creation and initial owner membership
 - [ ] Invitations and tenant switching
 - [x] Role/permission model and server-side authorization middleware
-- [ ] Protected React routes and client session lifecycle
+- [x] Protected dashboard entry and client session lifecycle with in-memory access tokens
 - [ ] Tenant-scoped repository/service patterns and cross-tenant isolation tests
 - [ ] Audit events for security-sensitive actions
 
