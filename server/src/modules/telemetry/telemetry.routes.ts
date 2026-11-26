@@ -107,8 +107,8 @@ data: ${JSON.stringify(message.event)}
 `);
   };
   telemetryEvents.on("reading", listener);
-  const heartbeat = setInterval(() => res.write(": heartbeat
+  const heartbeat = setInterval(() => res.write(`: heartbeat
 
-"), 25_000);
+`), 25_000);
   res.on("close", () => { clearInterval(heartbeat); telemetryEvents.off("reading", listener); });
 });
