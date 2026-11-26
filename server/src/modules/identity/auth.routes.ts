@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import type { CookieOptions, Request, Response } from "express";
-import { AuthError, login, logout as unusedLogout, register, revokeRefreshToken, rotateRefreshToken } from "./auth.service.js";
+import { AuthError, login, register, revokeRefreshToken, rotateRefreshToken } from "./auth.service.js";
 import { requireAuth, type AuthenticatedRequest } from "./auth.middleware.js";
 import { User } from "./user.model.js";
 import { env } from "../../config/env.js";
@@ -23,7 +23,9 @@ const readRefreshCookie = (req: Request) => {
   return raw ? decodeURIComponent(raw.slice("voltwise_refresh=".length)) : undefined;
 };
 const setRefreshCookie = (res: Response, token: string) => res.cookie("voltwise_refresh", token, cookieOptions);
-const clearRefreshCookie = (res: Response) => res.clearCookie("voltwise_refresh", { ...cookieOptions, maxAge: undefined });
+const clearRefreshCookie = (res: Response) => res.clearCookie("voltwise_refresh", {
+  httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "lax", path: "/api/v1/auth"
+});
 
 authRouter.post("/register", async (req, res, next) => {
   try {
