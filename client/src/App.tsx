@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useAuth } from "./auth/AuthContext";
+import FacilitiesPage from "./FacilitiesPage";
 import AuthScreen from "./auth/AuthScreen";
 import { Activity, ArrowDownRight, ArrowUpRight, BatteryCharging, Building2, ChevronDown, CircleHelp, Command, Download, Gauge, Leaf, Menu, MoreHorizontal, PlugZap, RadioTower, Search, Settings2, ShieldCheck, Sun, Zap } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -26,23 +28,24 @@ function MetricCard({ label, value, note, trend, icon: Icon }: { label: string; 
 
 function Dashboard() {
   const { user, organization, logout } = useAuth();
+  const [activePage, setActivePage] = useState<"overview" | "facilities" | "assets">("overview");
   return <div className="app-shell">
     <aside className="sidebar">
       <div className="brand"><div className="brand-mark"><Zap size={20} fill="currentColor"/></div><div><strong>voltwise</strong><small>ENERGY INTELLIGENCE</small></div></div>
       <div className="workspace"><div className="workspace-icon">N</div><div><strong>{organization?.name ?? "Your organization"}</strong><small>{organization?.role ?? "Enterprise workspace"}</small></div><ChevronDown size={15}/></div>
       <div className="nav-label">WORKSPACE</div>
       <nav>
-        <a className="nav-item active" href="#"><Gauge size={17}/> Overview</a>
-        <a className="nav-item" href="#"><Building2 size={17}/> Facilities</a>
-        <a className="nav-item" href="#"><Activity size={17}/> Energy analytics</a>
-        <a className="nav-item" href="#"><BatteryCharging size={17}/> Energy assets</a>
-        <a className="nav-item" href="#"><PlugZap size={17}/> Demand response</a>
-        <a className="nav-item" href="#"><Leaf size={17}/> Sustainability</a>
+        <button className={`nav-item ${activePage === "overview" ? "active" : ""}`} onClick={() => setActivePage("overview")}><Gauge size={17}/> Overview</button>
+        <button className={`nav-item ${activePage === "facilities" ? "active" : ""}`} onClick={() => setActivePage("facilities")}><Building2 size={17}/> Facilities</button>
+        <button className="nav-item" onClick={() => setActivePage("overview")}><Activity size={17}/> Energy analytics</button>
+        <button className={`nav-item ${activePage === "assets" ? "active" : ""}`} onClick={() => setActivePage("assets")}><BatteryCharging size={17}/> Energy assets</button>
+        <button className="nav-item" onClick={() => setActivePage("overview")}><PlugZap size={17}/> Demand response</button>
+        <button className="nav-item" onClick={() => setActivePage("overview")}><Leaf size={17}/> Sustainability</button>
       </nav>
       <div className="nav-label">MANAGE</div>
       <nav>
-        <a className="nav-item" href="#"><ShieldCheck size={17}/> Alerts & incidents <span className="nav-count">3</span></a>
-        <a className="nav-item" href="#"><Settings2 size={17}/> Settings</a>
+        <button className="nav-item" onClick={() => setActivePage("overview")}><ShieldCheck size={17}/> Alerts & incidents <span className="nav-count">3</span></button>
+        <button className="nav-item" onClick={() => setActivePage("overview")}><Settings2 size={17}/> Settings</button>
       </nav>
       <div className="sidebar-bottom"><div className="support-card"><CircleHelp size={17}/><div><strong>Need a hand?</strong><small>Visit the product guide</small></div></div><div className="user-row"><div className="avatar">U</div><div><strong>{user?.name ?? "Workspace member"}</strong><small>{user?.email ?? "Signed in"}</small></div><button className="logout-button" onClick={() => void logout()}>Sign out</button></div></div>
     </aside>
