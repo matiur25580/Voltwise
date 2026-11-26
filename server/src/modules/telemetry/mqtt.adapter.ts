@@ -32,5 +32,5 @@ export function startMqttAdapter(brokerUrl: string | undefined, username?: strin
 export async function stopMqttAdapter() {
   if (!client) return;
   const current = client; client = undefined;
-  await new Promise<void>((resolve) => current.end(false, {}, resolve));
+  await new Promise<void>((resolve) => current.end(false, {}, () => resolve()));
 }
