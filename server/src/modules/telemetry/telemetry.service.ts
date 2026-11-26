@@ -8,7 +8,7 @@ import { TelemetryEvent } from "./telemetry-event.model.js";
 const measurementSchema = z.object({
   metric: z.enum(["active_power", "energy_import", "energy_export", "voltage", "current", "frequency", "power_factor", "temperature", "state_of_charge", "generation_power", "battery_power"]),
   value: z.number().finite().min(-1_000_000_000).max(1_000_000_000),
-  unit: z.enum(["W", "kW", "Wh", "kWh", "V", "A", "Hz", "%", "C", "kvar", "kVA"]),
+  unit: z.enum(["W", "kW", "Wh", "kWh", "V", "A", "Hz", "%", "C", "kvar", "kVA", "1"]),
   quality: z.enum(["good", "estimated", "suspect"]).optional()
 });
 export const telemetryPayloadSchema = z.object({
