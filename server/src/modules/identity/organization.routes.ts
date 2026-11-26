@@ -7,6 +7,9 @@ import { requireAuth, requirePermission, type AuthenticatedRequest } from "./aut
 import { Organization } from "./organization.model.js";
 import { Membership } from "./membership.model.js";
 import { AuditEvent } from "./audit-event.model.js";
+import { OrganizationInvitation } from "./invitation.model.js";
+import { User } from "./user.model.js";
+import { createHash, randomBytes } from "node:crypto";
 import { roles, type Role } from "./identity.types.js";
 
 export const organizationRouter = Router();
@@ -14,9 +17,11 @@ organizationRouter.use(requireAuth);
 
 const refreshCookieOptions: CookieOptions = {
   httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "lax",
-  path: "/api/v1/auth", maxAge: env.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000
+  path: "/", maxAge: env.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000
 };
 const roleSchema = z.enum(roles);
+const inviteRoleSchema = z.enum(["admin", "operator", "analyst", "viewer"]);
+const hashInvitationToken = (token: string) => createHash("sha256").update(token).digest("hex");
 const readRefreshCookie = (req: AuthenticatedRequest) => {
   const raw = req.headers.cookie?.split(";").map((part) => part.trim()).find((part) => part.startsWith("voltwise_refresh="));
   return raw ? decodeURIComponent(raw.slice("voltwise_refresh=".length)) : undefined;
@@ -108,6 +113,90 @@ organizationRouter.patch("/members/:membershipId/status", requirePermission("mem
     await target.save();
     await writeAudit(req.auth!.tenantId, req.auth!.userId, status === "suspended" ? "member.suspended" : "member.reactivated", "membership", membershipId);
     res.json({ data: { id: target.id, role: target.role, status: target.status } });
+  } catch (error) { next(error); }
+});
+
+
+organizationRouter.post("/invitations", requirePermission("members:manage"), async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const input = z.object({ email: z.string().trim().email().max(254), role: inviteRoleSchema }).parse(req.body);
+    if (req.auth!.role === "admin" && input.role === "admin") {
+      throw new AuthError("ROLE_ESCALATION_DENIED", "Administrators cannot invite another administrator.", 403);
+    }
+    const email = input.email.toLowerCase();
+    const targetUser = await User.findOne({ email }).select("_id");
+    if (targetUser && await Membership.exists({ tenantId: req.auth!.tenantId, userId: targetUser._id, status: "active" })) {
+      throw new AuthError("ALREADY_A_MEMBER", "This user is already an active organization member.", 409);
+    }
+    const pending = await OrganizationInvitation.findOne({
+      tenantId: req.auth!.tenantId, email, status: "pending", expiresAt: { $gt: new Date() }
+    });
+    if (pending) throw new AuthError("INVITATION_ALREADY_PENDING", "A pending invitation already exists for this email.", 409);
+    const token = randomBytes(32).toString("base64url");
+    const invitation = await OrganizationInvitation.create({
+      tenantId: req.auth!.tenantId, email, role: input.role, tokenHash: hashInvitationToken(token),
+      invitedBy: req.auth!.userId, expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    });
+    await writeAudit(req.auth!.tenantId, req.auth!.userId, "invitation.created", "invitation", invitation.id, { email, role: input.role });
+    // The opaque token is returned once so a configured delivery adapter can send it; it is never persisted or logged in plaintext.
+    res.status(201).json({ data: {
+      id: invitation.id, email, role: invitation.role, status: invitation.status,
+      expiresAt: invitation.expiresAt, invitationToken: token
+    } });
+  } catch (error) { next(error); }
+});
+
+organizationRouter.get("/invitations", requirePermission("members:read"), async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const invitations = await OrganizationInvitation.find({ tenantId: req.auth!.tenantId, status: "pending", expiresAt: { $gt: new Date() } })
+      .select("-tokenHash").sort({ createdAt: -1 }).lean();
+    res.json({ data: invitations });
+  } catch (error) { next(error); }
+});
+
+organizationRouter.post("/invitations/accept", async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const token = z.string().min(32).max(128).parse(req.body.token);
+    const user = await User.findById(req.auth!.userId).select("email");
+    if (!user) throw new AuthError("USER_NOT_FOUND", "Account no longer exists.", 404);
+    const invitation = await OrganizationInvitation.findOne({
+      tokenHash: hashInvitationToken(token), status: "pending", expiresAt: { $gt: new Date() }
+    }).select("+tokenHash");
+    if (!invitation) throw new AuthError("INVITATION_INVALID", "Invitation is invalid, expired, or no longer pending.", 404);
+    if (user.email.toLowerCase() !== invitation.email.toLowerCase()) {
+      throw new AuthError("INVITATION_EMAIL_MISMATCH", "Sign in with the email address this invitation was sent to.", 403);
+    }
+    const claimed = await OrganizationInvitation.findOneAndUpdate(
+      { _id: invitation._id, status: "pending", expiresAt: { $gt: new Date() } },
+      { $set: { status: "accepted", acceptedBy: user._id, acceptedAt: new Date() } },
+      { new: true }
+    );
+    if (!claimed) throw new AuthError("INVITATION_ALREADY_USED", "This invitation has already been accepted or revoked.", 409);
+    try {
+      const membership = await Membership.findOneAndUpdate(
+        { tenantId: claimed.tenantId, userId: user._id },
+        { $set: { role: claimed.role, status: "active" }, $setOnInsert: { tenantId: claimed.tenantId, userId: user._id } },
+        { new: true, upsert: true, runValidators: true }
+      );
+      await writeAudit(claimed.tenantId.toString(), user.id, "invitation.accepted", "invitation", claimed.id, { role: claimed.role });
+      res.status(200).json({ data: { organizationId: claimed.tenantId.toString(), membershipId: membership!.id, role: membership!.role } });
+    } catch (error) {
+      await OrganizationInvitation.updateOne({ _id: claimed._id, status: "accepted", acceptedBy: user._id }, { $set: { status: "pending", acceptedBy: null, acceptedAt: null } });
+      throw error;
+    }
+  } catch (error) { next(error); }
+});
+
+organizationRouter.delete("/invitations/:invitationId", requirePermission("members:manage"), async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const invitationId = z.string().regex(/^[a-f\\d]{24}$/i).parse(req.params.invitationId);
+    const invitation = await OrganizationInvitation.findOneAndUpdate(
+      { _id: invitationId, tenantId: req.auth!.tenantId, status: "pending" },
+      { $set: { status: "revoked" } }, { new: true }
+    );
+    if (!invitation) throw new AuthError("INVITATION_NOT_FOUND", "Pending organization invitation was not found.", 404);
+    await writeAudit(req.auth!.tenantId, req.auth!.userId, "invitation.revoked", "invitation", invitation.id);
+    res.status(204).send();
   } catch (error) { next(error); }
 });
 
