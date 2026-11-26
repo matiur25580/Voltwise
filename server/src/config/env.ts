@@ -9,7 +9,10 @@ const envSchema = z.object({
   JWT_ACCESS_SECRET: z.string().min(32).default("local-development-secret-change-before-deploy-000000"),
   ACCESS_TOKEN_TTL: z.string().default("15m"),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(90).default(30),
-  MQTT_BROKER_URL: z.string().url().optional(),\n  MQTT_USERNAME: z.string().optional(),\n  MQTT_PASSWORD: z.string().optional(),\n  LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info")
+  MQTT_BROKER_URL: z.string().url().optional(),
+  MQTT_USERNAME: z.string().optional(),
+  MQTT_PASSWORD: z.string().optional(),
+  LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info")
 });
 
 const parsed = envSchema.safeParse(process.env);
