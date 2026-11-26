@@ -4,8 +4,8 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import pinoHttp from "pino-http";
 import { env } from "./config/env.js";
+import { isDatabaseReady } from "./config/database.js";
 import { logger } from "./lib/logger.js";
-import { healthRouter } from "./routes/health.routes.js";
 
 export const app = express();
 
@@ -25,16 +25,40 @@ app.use(rateLimit({
   legacyHeaders: false
 }));
 
-app.get("/api/v1/health", (_req, res) => {
+app.get("/api/v1/health/live", (_req, res) => {
   res.status(200).json({
     status: "ok",
     service: "voltwise-api",
-    timestamp: new Date().toISOString(),
-    checks: { api: "ok", database: "not_configured" }
+    timestamp: new Date().toISOString()
   });
 });
 
-app.use("/api/v1/health/details", healthRouter);
+app.get("/api/v1/health/ready", (_req, res) => {
+  const databaseReady = isDatabaseReady();
+  res.status(databaseReady ? 200 : 503).json({
+    status: databaseReady ? "ready" : "degraded",
+    service: "voltwise-api",
+    timestamp: new Date().toISOString(),
+    checks: {
+      api: "ok",
+      database: databaseReady ? "connected" : "disconnected"
+    }
+  });
+});
+
+// Backwards-friendly health endpoint reports readiness, not merely process liveness.
+app.get("/api/v1/health", (_req, res) => {
+  const databaseReady = isDatabaseReady();
+  res.status(databaseReady ? 200 : 503).json({
+    status: databaseReady ? "ok" : "degraded",
+    service: "voltwise-api",
+    timestamp: new Date().toISOString(),
+    checks: {
+      api: "ok",
+      database: databaseReady ? "connected" : "disconnected"
+    }
+  });
+});
 
 app.use((_req, res) => {
   res.status(404).json({
@@ -50,7 +74,7 @@ app.use((error: unknown, _req: express.Request, res: express.Response, _next: ex
   res.status(500).json({
     error: {
       code: "INTERNAL_SERVER_ERROR",
-      message: env.NODE_ENV === "production" ? "An unexpected error occurred." : "An unexpected error occurred."
+      message: "An unexpected error occurred."
     }
   });
 });
