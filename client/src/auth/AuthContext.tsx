@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (profileResponse.ok) {
       const profile = await profileResponse.json() as { data: { user: User; role: string } };
       setUser(profile.data.user);
-      setOrganization((current) => ({ ...current, role: profile.data.role }));
+      setOrganization((current) => current ? { ...current, role: profile.data.role } : current);
     } else if (body.data.user) setUser(body.data.user);
     if (organizationResponse.ok) {
       const result = await organizationResponse.json() as { data: { organization: { id: string; name: string; slug: string } } };
