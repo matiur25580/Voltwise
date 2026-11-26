@@ -15,6 +15,6 @@ const deviceSchema = new Schema({
   createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true }
 }, { timestamps: true });
 
-deviceSchema.index({ tenantId: 1, deviceCode: 1 }, { unique: true });
+deviceSchema.index({ deviceCode: 1 }, { unique: true });
 deviceSchema.index({ tenantId: 1, status: 1, lastSeenAt: -1 });
 export const TelemetryDevice = model("TelemetryDevice", deviceSchema);
