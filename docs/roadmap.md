@@ -1,0 +1,55 @@
+# Delivery Roadmap
+
+## Milestone 1 — Repository and application foundation
+- [x] Establish TypeScript npm-workspaces monorepo
+- [x] Add Express API bootstrap and health endpoint
+- [x] Add React/Vite dashboard shell with clearly marked sample metrics
+- [x] Add environment template, local MongoDB Compose service, and CI workflow
+- [x] Document architecture boundaries and safety principles
+- [ ] Add baseline automated tests and verify a clean install/build
+
+## Milestone 2 — Enterprise identity and tenancy
+- [ ] User registration and login with bcrypt password hashing
+- [ ] Short-lived access tokens and rotating, revocable refresh sessions
+- [ ] Organization creation, membership, invitations, and tenant switching
+- [ ] Role/permission model and server-side authorization middleware
+- [ ] Tenant-scoped repository/service patterns and isolation tests
+- [ ] Audit events for security-sensitive actions
+
+## Milestone 3 — Facilities and energy assets
+- [ ] Facility and site hierarchy
+- [ ] Meter, equipment, inverter, battery, and EV charger registries
+- [ ] Asset lifecycle, status, ownership, and metadata
+- [ ] Tenant-scoped CRUD APIs and dashboard workflows
+
+## Milestone 4 — Telemetry and real-time operations
+- [ ] Device credentials and ingestion contracts
+- [ ] MQTT adapter and simulated device publisher
+- [ ] Payload validation, normalization, idempotency, and ingestion observability
+- [ ] Historical readings and real-time UI updates
+
+## Milestone 5 — Energy intelligence
+- [ ] Consumption aggregation and tariff-aware cost calculation
+- [ ] Baseline forecasting and forecast evaluation
+- [ ] Explainable anomaly detection and alert lifecycle
+- [ ] Actual-versus-predicted analytics
+
+## Milestone 6 — Flexibility and optimization
+- [ ] Demand-response programmes and events
+- [ ] Battery and flexible-load scheduling simulator
+- [ ] Constraint-aware optimization recommendations
+- [ ] Approval, audit, and outcome measurement
+
+## Milestone 7 — Maintenance, sustainability, and AI assistant
+- [ ] Equipment health indicators and maintenance work orders
+- [ ] Emissions calculations with factor/source provenance
+- [ ] Permission-scoped AI assistant with grounded responses
+- [ ] AI-generated operational summaries with citations to platform records
+
+## Milestone 8 — Production hardening
+- [ ] Unit, integration, and end-to-end coverage
+- [ ] Rate limiting, security headers, secrets and dependency review
+- [ ] Structured logs, metrics, tracing, and alerting
+- [ ] Backup/restore runbook and retention policies
+- [ ] Accessibility, performance, and responsive design review
+- [ ] Deployment pipeline and production documentation
