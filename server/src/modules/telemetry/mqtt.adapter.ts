@@ -7,7 +7,7 @@ let client: MqttClient | undefined;
 export function startMqttAdapter(brokerUrl: string | undefined, username?: string, password?: string) {
   if (!brokerUrl || client) return;
   client = mqtt.connect(brokerUrl, {
-    username, password, reconnectPeriod: 5_000, connectTimeout: 10_000,
+    ...(username ? { username } : {}), ...(password ? { password } : {}), reconnectPeriod: 5_000, connectTimeout: 10_000,
     clean: true, clientId: `voltwise-ingest-${process.pid}`
   });
   client.on("connect", () => {
