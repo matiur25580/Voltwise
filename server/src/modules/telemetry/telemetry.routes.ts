@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { AuthError } from "../identity/auth.service.js";
 import { requireAuth, requirePermission, type AuthenticatedRequest } from "../identity/auth.middleware.js";
@@ -102,5 +101,5 @@ telemetryRouter.get("/telemetry/stream", requireAuth, requirePermission("energy:
   };
   telemetryEvents.on("reading", listener);
   const heartbeat = setInterval(() => res.write(": heartbeat\\n\\n"), 25_000);
-  req.on("close", () => { clearInterval(heartbeat); telemetryEvents.off("reading", listener); });
+  res.on("close", () => { clearInterval(heartbeat); telemetryEvents.off("reading", listener); });
 });
