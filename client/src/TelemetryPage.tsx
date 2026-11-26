@@ -109,7 +109,6 @@ export default function TelemetryPage() {
     setNotice("Device credential revoked."); await load();
   };
 
-  const latest = events[0];
   const latestPower = events.flatMap((event) => event.readings.map((reading) => ({ ...reading, occurredAt: event.occurredAt }))).find((reading) => reading.metric === "active_power");
   const latestEnergy = events.flatMap((event) => event.readings.map((reading) => ({ ...reading, occurredAt: event.occurredAt }))).find((reading) => reading.metric === "energy_import");
   const activeDevices = devices.filter((device) => device.status === "active").length;
