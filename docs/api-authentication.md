@@ -1,42 +1,31 @@
-# Identity API
+# Identity and Organization API
 
-All routes are prefixed with `/api/v1`.
+All routes are prefixed with `/api/v1`. Authenticated routes require `Authorization: Bearer <access-token>`; refresh credentials are carried only in the HttpOnly `voltwise_refresh` cookie.
 
-## Register
+## Authentication
 
-`POST /auth/register`
-
-```json
-{
-  "name": "Alex Morgan",
-  "email": "alex@example.com",
-  "password": "a-long-unique-password",
-  "organizationName": "Northstar Industries"
-}
-```
-
-Creates a user, an organization, and an owner membership. Returns a short-lived access token in the response body and sets the rotating refresh token in an HttpOnly cookie.
-
-## Login
-
-`POST /auth/login`
-
-Accepts `email` and `password`. The initial implementation selects the user's earliest active membership. Multi-organization tenant switching is a later milestone.
-
-## Refresh and logout
-
-- `POST /auth/refresh` rotates the refresh cookie and returns a new access token.
+- `POST /auth/register` creates a user, organization, owner membership, and session.
+- `POST /auth/login` authenticates the user and selects the earliest active membership for the initial session.
+- `POST /auth/refresh` rotates the refresh cookie and returns a short-lived access token.
 - `POST /auth/logout` revokes the presented refresh session and clears the cookie.
+- `GET /auth/me` returns the authenticated user and trusted tenant context.
 
-The refresh cookie is scoped to `/api/v1/auth`, HttpOnly, SameSite=Lax, and Secure in production. The browser must send credentials for refresh/logout requests.
+## Organizations and tenant switching
 
-## Current identity
+- `GET /organizations` lists only the authenticated user's active organization memberships.
+- `POST /organizations/:organizationId/switch` switches context only when the caller has an active membership in that organization. The server revokes the presented refresh session, issues a new tenant-scoped session, and replaces the HttpOnly cookie.
+- `GET /organizations/current` returns the active organization and member count.
 
-`GET /auth/me` requires `Authorization: Bearer <access-token>` and returns the user, trusted tenant context, role, and effective permissions.
+The active tenant is derived from the verified access token and revalidated against an active membership on every authenticated request. Clients must never choose a tenant by sending a tenant ID in ordinary resource requests.
 
-## Organization
+## Organization members
 
-`GET /organizations/current` requires a bearer token and the `organization:read` permission.
+- `GET /organizations/members` lists members in the active tenant; requires `members:read`.
+- `PATCH /organizations/members/:membershipId/role` changes a member role; requires `members:manage`.
+- `PATCH /organizations/members/:membershipId/status` activates or suspends a member; requires `members:manage`.
+- `GET /organizations/audit-events?limit=50` reads the latest tenant audit events; requires `members:manage`.
+
+Every member mutation scopes its database lookup by both membership ID and the trusted active tenant. Users cannot change their own role or membership status. Only owners may assign owner roles; admins cannot assign owner/admin roles. The final active owner cannot be demoted or suspended.
 
 ## Error envelope
 
@@ -53,4 +42,4 @@ Errors use a stable shape:
 
 ## Operational requirements
 
-Set a unique `JWT_ACCESS_SECRET` (at least 32 characters) and use HTTPS in production. Do not store access or refresh tokens in localStorage. Keep the refresh cookie HttpOnly and use a same-origin deployment or a carefully configured credentialed CORS origin. Before public production launch, add email verification, password reset, CSRF protection for the deployed cookie topology, security audit events, account abuse controls, and transactional registration.
+Set a unique `JWT_ACCESS_SECRET` (at least 32 characters) and use HTTPS in production. Do not store access or refresh tokens in localStorage. Keep the refresh cookie HttpOnly and use a same-origin deployment or a carefully configured credentialed CORS origin. Before public production launch, add email verification, password reset, CSRF protection for the deployed cookie topology, invitation delivery/acceptance, transactional registration, and broader security integration tests.
