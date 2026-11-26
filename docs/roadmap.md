@@ -10,11 +10,13 @@
 - [ ] Verify clean install, automated tests, typechecks, and production builds in CI
 
 ## Milestone 2 — Enterprise identity and tenancy
-- [ ] User registration and login with bcrypt password hashing
-- [ ] Short-lived access tokens and rotating, revocable refresh sessions
-- [ ] Organization creation, membership, invitations, and tenant switching
-- [ ] Role/permission model and server-side authorization middleware
-- [ ] Tenant-scoped repository/service patterns and isolation tests
+- [x] User registration and login with bcrypt password hashing
+- [x] Short-lived access tokens and rotating, revocable refresh sessions
+- [x] Organization creation and initial owner membership
+- [ ] Invitations and tenant switching
+- [x] Role/permission model and server-side authorization middleware
+- [ ] Protected React routes and client session lifecycle
+- [ ] Tenant-scoped repository/service patterns and cross-tenant isolation tests
 - [ ] Audit events for security-sensitive actions
 
 ## Milestone 3 — Facilities and energy assets
