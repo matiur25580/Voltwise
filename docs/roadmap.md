@@ -18,8 +18,9 @@
 - [x] Protected dashboard entry and client session lifecycle with in-memory access tokens
 - [x] Tenant-scoped member administration and membership isolation in database queries
 - [x] Tenant-scoped audit event model and organization/member security events
-- [ ] Invitation creation, secure acceptance, and email delivery
-- [ ] Cross-tenant integration tests, concurrent last-owner protection, and full security review
+- [x] Tenant-scoped invitation creation, hashed one-time tokens, expiry, revocation, and authenticated acceptance
+- [ ] Email delivery adapter and registration-time invitation acceptance
+- [ ] Cross-tenant integration tests, transaction-backed concurrent last-owner protection, and full security review
 
 ## Milestone 3 — Facilities and energy assets
 - [ ] Facility and site hierarchy
