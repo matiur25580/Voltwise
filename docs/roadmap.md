@@ -13,11 +13,13 @@
 - [x] User registration and login with bcrypt password hashing
 - [x] Short-lived access tokens and rotating, revocable refresh sessions
 - [x] Organization creation and initial owner membership
-- [ ] Invitations and tenant switching
+- [x] Organization membership listing and secure tenant switching
 - [x] Role/permission model and server-side authorization middleware
 - [x] Protected dashboard entry and client session lifecycle with in-memory access tokens
-- [ ] Tenant-scoped repository/service patterns and cross-tenant isolation tests
-- [ ] Audit events for security-sensitive actions
+- [x] Tenant-scoped member administration and membership isolation in database queries
+- [x] Tenant-scoped audit event model and organization/member security events
+- [ ] Invitation creation, secure acceptance, and email delivery
+- [ ] Cross-tenant integration tests, concurrent last-owner protection, and full security review
 
 ## Milestone 3 — Facilities and energy assets
 - [ ] Facility and site hierarchy
