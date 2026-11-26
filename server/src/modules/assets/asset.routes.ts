@@ -53,7 +53,6 @@ const pagination = z.object({
   type: z.string().optional(),
   facilityId: objectId.optional()
 });
-const regexEscape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const audit = (req: AuthenticatedRequest, action: string, resourceType: string, resourceId: string, metadata: Record<string, unknown> = {}) =>
   AuditEvent.create({ tenantId: req.auth!.tenantId, actorUserId: req.auth!.userId, action, resourceType, resourceId, metadata });
 
