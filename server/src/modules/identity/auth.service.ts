@@ -62,7 +62,10 @@ export async function rotateRefreshToken(rawToken: string) {
     { _id: existing._id, revokedAt: null, expiresAt: { $gt: new Date() } },
     { $set: { revokedAt: new Date() } }, { new: true }
   );
-  if (!revoked) {\n    await RefreshSession.updateMany({ familyId: existing.familyId, revokedAt: null }, { $set: { revokedAt: new Date() } });\n    throw new AuthError("REFRESH_TOKEN_REUSE", "Refresh token has already been rotated.");\n  }
+  if (!revoked) {
+    await RefreshSession.updateMany({ familyId: existing.familyId, revokedAt: null }, { $set: { revokedAt: new Date() } });
+    throw new AuthError("REFRESH_TOKEN_REUSE", "Refresh token has already been rotated.");
+  }
   const membership = await Membership.findOne({ tenantId: existing.tenantId, userId: existing.userId, status: "active" });
   if (!membership) {
     await RefreshSession.updateMany({ familyId: existing.familyId, revokedAt: null }, { $set: { revokedAt: new Date() } });
