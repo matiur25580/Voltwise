@@ -8,8 +8,6 @@ import { EnergyAsset, energyAssetStatuses, energyAssetTypes } from "./energy-ass
 import { canDeleteFacility, escapeSearchTerm } from "./asset.policy.js";
 
 export const assetRouter = Router();
-assetRouter.use(requireAuth);
-
 const objectId = z.string().regex(/^[a-f\d]{24}$/i);
 const addressSchema = z.object({
   line1: z.string().trim().max(160).optional(),
@@ -71,7 +69,7 @@ async function assertParentInTenant(tenantId: string, parentId: string | null | 
   }
 }
 
-assetRouter.post("/facilities", requirePermission("assets:manage"), async (req: AuthenticatedRequest, res, next) => {
+assetRouter.post("/facilities", requireAuth, requirePermission("assets:manage"), async (req: AuthenticatedRequest, res, next) => {
   try {
     const input = facilityInput.parse(req.body);
     await assertParentInTenant(req.auth!.tenantId, input.parentFacilityId);
@@ -81,7 +79,7 @@ assetRouter.post("/facilities", requirePermission("assets:manage"), async (req: 
   } catch (error) { next(error); }
 });
 
-assetRouter.get("/facilities", requirePermission("energy:read"), async (req: AuthenticatedRequest, res, next) => {
+assetRouter.get("/facilities", requireAuth, requirePermission("energy:read"), async (req: AuthenticatedRequest, res, next) => {
   try {
     const filters = pagination.parse(req.query);
     const query: Record<string, unknown> = { tenantId: req.auth!.tenantId };
@@ -99,7 +97,7 @@ assetRouter.get("/facilities", requirePermission("energy:read"), async (req: Aut
   } catch (error) { next(error); }
 });
 
-assetRouter.get("/facilities/:facilityId", requirePermission("energy:read"), async (req: AuthenticatedRequest, res, next) => {
+assetRouter.get("/facilities/:facilityId", requireAuth, requirePermission("energy:read"), async (req: AuthenticatedRequest, res, next) => {
   try {
     const facilityId = objectId.parse(req.params.facilityId);
     const facility = await Facility.findOne({ _id: facilityId, tenantId: req.auth!.tenantId }).lean();
@@ -112,7 +110,7 @@ assetRouter.get("/facilities/:facilityId", requirePermission("energy:read"), asy
   } catch (error) { next(error); }
 });
 
-assetRouter.patch("/facilities/:facilityId", requirePermission("assets:manage"), async (req: AuthenticatedRequest, res, next) => {
+assetRouter.patch("/facilities/:facilityId", requireAuth, requirePermission("assets:manage"), async (req: AuthenticatedRequest, res, next) => {
   try {
     const facilityId = objectId.parse(req.params.facilityId);
     const input = facilityPatch.parse(req.body);
@@ -126,7 +124,7 @@ assetRouter.patch("/facilities/:facilityId", requirePermission("assets:manage"),
   } catch (error) { next(error); }
 });
 
-assetRouter.delete("/facilities/:facilityId", requirePermission("assets:manage"), async (req: AuthenticatedRequest, res, next) => {
+assetRouter.delete("/facilities/:facilityId", requireAuth, requirePermission("assets:manage"), async (req: AuthenticatedRequest, res, next) => {
   try {
     const facilityId = objectId.parse(req.params.facilityId);
     const [facility, assetCount, childCount] = await Promise.all([
@@ -142,7 +140,7 @@ assetRouter.delete("/facilities/:facilityId", requirePermission("assets:manage")
   } catch (error) { next(error); }
 });
 
-assetRouter.post("/assets", requirePermission("assets:manage"), async (req: AuthenticatedRequest, res, next) => {
+assetRouter.post("/assets", requireAuth, requirePermission("assets:manage"), async (req: AuthenticatedRequest, res, next) => {
   try {
     const input = assetInput.parse(req.body);
     const facility = await Facility.findOne({ _id: input.facilityId, tenantId: req.auth!.tenantId }).select("_id");
@@ -153,7 +151,7 @@ assetRouter.post("/assets", requirePermission("assets:manage"), async (req: Auth
   } catch (error) { next(error); }
 });
 
-assetRouter.get("/assets", requirePermission("energy:read"), async (req: AuthenticatedRequest, res, next) => {
+assetRouter.get("/assets", requireAuth, requirePermission("energy:read"), async (req: AuthenticatedRequest, res, next) => {
   try {
     const filters = pagination.parse(req.query);
     const query: Record<string, unknown> = { tenantId: req.auth!.tenantId };
@@ -174,7 +172,7 @@ assetRouter.get("/assets", requirePermission("energy:read"), async (req: Authent
   } catch (error) { next(error); }
 });
 
-assetRouter.get("/assets/:assetId", requirePermission("energy:read"), async (req: AuthenticatedRequest, res, next) => {
+assetRouter.get("/assets/:assetId", requireAuth, requirePermission("energy:read"), async (req: AuthenticatedRequest, res, next) => {
   try {
     const assetId = objectId.parse(req.params.assetId);
     const asset = await EnergyAsset.findOne({ _id: assetId, tenantId: req.auth!.tenantId })
@@ -184,7 +182,7 @@ assetRouter.get("/assets/:assetId", requirePermission("energy:read"), async (req
   } catch (error) { next(error); }
 });
 
-assetRouter.patch("/assets/:assetId", requirePermission("assets:manage"), async (req: AuthenticatedRequest, res, next) => {
+assetRouter.patch("/assets/:assetId", requireAuth, requirePermission("assets:manage"), async (req: AuthenticatedRequest, res, next) => {
   try {
     const assetId = objectId.parse(req.params.assetId);
     const input = assetPatch.parse(req.body);
@@ -197,7 +195,7 @@ assetRouter.patch("/assets/:assetId", requirePermission("assets:manage"), async 
   } catch (error) { next(error); }
 });
 
-assetRouter.delete("/assets/:assetId", requirePermission("assets:manage"), async (req: AuthenticatedRequest, res, next) => {
+assetRouter.delete("/assets/:assetId", requireAuth, requirePermission("assets:manage"), async (req: AuthenticatedRequest, res, next) => {
   try {
     const assetId = objectId.parse(req.params.assetId);
     const asset = await EnergyAsset.findOne({ _id: assetId, tenantId: req.auth!.tenantId });
