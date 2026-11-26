@@ -30,7 +30,7 @@ export async function ingestTelemetry(deviceCode: string, credential: string, ra
   const payload = telemetryPayloadSchema.parse(rawPayload);
   const device = await TelemetryDevice.findOne({ deviceCode: deviceCode.toUpperCase(), status: "active" })
     .select("+credentialHash");
-  if (!device || !credential) throw new AuthError("DEVICE_UNAUTHENTICATED", "A valid active device credential is required.", 401);
+  if (!device || credential.length !== 43) throw new AuthError("DEVICE_UNAUTHENTICATED", "A valid active device credential is required.", 401);
   const candidate = createHash("sha256").update(credential).digest();
   const stored = Buffer.from(device.credentialHash, "hex");
   if (candidate.length !== stored.length || !timingSafeEqual(candidate, stored)) {
