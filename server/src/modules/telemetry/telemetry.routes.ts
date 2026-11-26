@@ -33,7 +33,7 @@ telemetryRouter.post("/devices", requireAuth, requirePermission("assets:manage")
       ...input, tenantId: req.auth!.tenantId, credentialHash, createdBy: req.auth!.userId
     });
     await audit(req, "telemetry_device.provisioned", device.id, { deviceCode: device.deviceCode, assetId: device.assetId.toString() });
-    res.status(201).json({ data: device.toJSON(), deviceCredential: credential, warning: "Copy this credential now. It is shown only once." });
+    const { credentialHash: _credentialHash, ...safeDevice } = device.toObject();\n    res.status(201).json({ data: safeDevice, deviceCredential: credential, warning: "Copy this credential now. It is shown only once." });
   } catch (error) { next(error); }
 });
 
