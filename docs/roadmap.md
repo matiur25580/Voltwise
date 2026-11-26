@@ -2,11 +2,12 @@
 
 ## Milestone 1 — Repository and application foundation
 - [x] Establish TypeScript npm-workspaces monorepo
-- [x] Add Express API bootstrap and health endpoint
+- [x] Add Express API bootstrap and database-aware health endpoints
 - [x] Add React/Vite dashboard shell with clearly marked sample metrics
 - [x] Add environment template, local MongoDB Compose service, and CI workflow
 - [x] Document architecture boundaries and safety principles
-- [ ] Add baseline automated tests and verify a clean install/build
+- [x] Add baseline API tests for liveness, readiness, and structured 404 responses
+- [ ] Verify clean install, automated tests, typechecks, and production builds in CI
 
 ## Milestone 2 — Enterprise identity and tenancy
 - [ ] User registration and login with bcrypt password hashing
