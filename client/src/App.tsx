@@ -1,3 +1,5 @@
+import { useAuth } from "./auth/AuthContext";
+import AuthScreen from "./auth/AuthScreen";
 import { Activity, ArrowDownRight, ArrowUpRight, BatteryCharging, Building2, ChevronDown, CircleHelp, Command, Download, Gauge, Leaf, Menu, MoreHorizontal, PlugZap, RadioTower, Search, Settings2, ShieldCheck, Sun, Zap } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
@@ -26,7 +28,7 @@ export default function App() {
   return <div className="app-shell">
     <aside className="sidebar">
       <div className="brand"><div className="brand-mark"><Zap size={20} fill="currentColor"/></div><div><strong>voltwise</strong><small>ENERGY INTELLIGENCE</small></div></div>
-      <div className="workspace"><div className="workspace-icon">N</div><div><strong>Northstar Industries</strong><small>Enterprise workspace</small></div><ChevronDown size={15}/></div>
+      <div className="workspace"><div className="workspace-icon">N</div><div><strong>{organization?.name ?? "Your organization"}</strong><small>{organization?.role ?? "Enterprise workspace"}</small></div><ChevronDown size={15}/></div>
       <div className="nav-label">WORKSPACE</div>
       <nav>
         <a className="nav-item active" href="#"><Gauge size={17}/> Overview</a>
@@ -63,4 +65,11 @@ export default function App() {
       </div>
     </main>
   </div>;
+}
+
+
+export default function App() {
+  const { accessToken, loading } = useAuth();
+  if (loading) return <div className="auth-loading"><div className="brand-mark"><Zap size={20} fill="currentColor"/></div><span>Securing your workspace…</span></div>;
+  return accessToken ? <Dashboard /> : <AuthScreen />;
 }
