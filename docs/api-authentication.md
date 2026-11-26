@@ -52,3 +52,30 @@ Errors use a stable shape:
 ## Operational requirements
 
 Set a unique `JWT_ACCESS_SECRET` (at least 32 characters) and use HTTPS in production. Do not store access or refresh tokens in localStorage. Keep the refresh cookie HttpOnly and use a same-origin deployment or a carefully configured credentialed CORS origin. Before public production launch, add email verification, password reset, CSRF protection appropriate to the deployed cookie topology, an email delivery adapter, registration-time invitation acceptance, transactional registration, and broader cross-tenant integration tests. Last-owner changes also need transaction-backed concurrency protection on a MongoDB replica set.
+
+
+## Facilities and energy assets
+
+All facility and asset endpoints use the verified active organization from the access token. A client-supplied `tenantId` is ignored; every read and mutation is scoped by the authenticated tenant.
+
+### Facilities
+
+- `POST /facilities` creates a facility; requires `assets:manage`.
+- `GET /facilities?page=1&limit=25&q=&status=&type=` lists facilities; requires `energy:read`.
+- `GET /facilities/:facilityId` returns a facility and its asset/child counts; requires `energy:read`.
+- `PATCH /facilities/:facilityId` updates facility metadata or status; requires `assets:manage`.
+- `DELETE /facilities/:facilityId` permanently deletes an empty facility; requires `assets:manage`. Facilities containing assets or child facilities cannot be deleted.
+
+Facility types include campus, office, industrial, warehouse, retail, data center, hospital, and other. Facilities support parent-child hierarchy, address, IANA timezone, floor area, status, and notes. Parent references must belong to the same tenant and cannot create a hierarchy cycle. Facility codes are unique within an organization.
+
+### Energy assets
+
+- `POST /assets` registers an asset against a facility in the active organization; requires `assets:manage`.
+- `GET /assets?page=1&limit=25&facilityId=&q=&status=&type=` lists assets; requires `energy:read`.
+- `GET /assets/:assetId` returns asset details; requires `energy:read`.
+- `PATCH /assets/:assetId` updates asset metadata and lifecycle state; requires `assets:manage`.
+- `DELETE /assets/:assetId` decommissions the asset (soft lifecycle transition); requires `assets:manage`.
+
+Supported asset classes include meters, solar PV, inverters, batteries, EV chargers, HVAC, generators, transformers, and other. Asset tags are unique within an organization. Asset registration validates that the selected facility belongs to the same organization. Lists use bounded pagination (maximum 100 records) and escaped literal search terms.
+
+These endpoints establish the registry layer only. They do not claim live telemetry, meter connectivity, or energy readings; ingestion and measurement pipelines are separate roadmap milestones.
