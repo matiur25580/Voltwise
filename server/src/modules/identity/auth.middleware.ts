@@ -11,7 +11,12 @@ export async function requireAuth(req: AuthenticatedRequest, res: Response, next
   try {
     const header = req.header("authorization");
     if (!header?.startsWith("Bearer ")) throw new AuthError("UNAUTHENTICATED", "A valid access token is required.");
-    const claims = await verifyAccessToken(header.slice(7));
+    let claims;
+    try {
+      claims = await verifyAccessToken(header.slice(7));
+    } catch {
+      throw new AuthError("INVALID_ACCESS_TOKEN", "Access token is invalid or expired.");
+    }
     if (!claims.sub || !claims.tenantId) throw new AuthError("INVALID_TOKEN", "Access token claims are invalid.");
     const membership = await Membership.findOne({
       tenantId: claims.tenantId, userId: claims.sub, status: "active"
