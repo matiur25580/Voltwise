@@ -52,6 +52,7 @@ function Dashboard() {
     <main className="main">
       <header className="topbar"><div className="mobile-brand"><Menu size={19}/> voltwise</div><div className="breadcrumbs">Workspace <span>/</span> <strong>Overview</strong></div><div className="top-actions"><div className="search-box"><Search size={15}/><span>Search anything...</span><kbd>⌘ K</kbd></div><button className="icon-button" aria-label="Help"><CircleHelp size={18}/></button><div className="avatar small">AM</div></div></header>
       <div className="content">
+        {activePage === "facilities" ? <FacilitiesPage mode="facilities"/> : activePage === "assets" ? <FacilitiesPage mode="assets"/> : <>
         <div className="page-heading"><div><div className="eyebrow"><span className="live-dot"/> ENERGY OPERATIONS <span className="sample-tag">SAMPLE WORKSPACE</span></div><h1>Good morning, Alex <span>✳</span></h1><p>Here’s what’s happening across your energy portfolio today.</p></div><button className="export-button"><Download size={15}/> Export report</button></div>
         <div className="notice"><div className="notice-icon"><Activity size={17}/></div><div><strong>Demonstration environment</strong><p>Metrics and facilities shown here are sample data. Connect verified meters and assets to display live operational information.</p></div><button aria-label="Dismiss notice">×</button></div>
         <section className="metric-grid">
@@ -66,6 +67,7 @@ function Dashboard() {
         </section>
         <section className="panel facilities-panel"><div className="panel-heading"><div><h2>Facility performance</h2><p>Sample portfolio snapshot</p></div><button className="text-link">View all facilities <ArrowUpRight size={14}/></button></div><div className="table-wrap"><table><thead><tr><th>FACILITY</th><th>ENERGY CONSUMPTION</th><th>CHANGE</th><th>STATUS</th><th></th></tr></thead><tbody>{facilities.map((facility) => <tr key={facility.name}><td><div className="facility-cell"><span className="facility-icon"><facility.icon size={17}/></span><div><strong>{facility.name}</strong><small>{facility.location}</small></div></div></td><td className="table-value">{facility.usage}</td><td className={facility.change.startsWith("-") ? "positive-text" : "warning-text"}>{facility.change}</td><td><span className={facility.state === "Healthy" ? "status healthy" : "status attention"}><i/>{facility.state}</span></td><td><MoreHorizontal size={18} color="#71819a"/></td></tr>)}</tbody></table></div></section>
         <footer><span>VOLTWISE PLATFORM <b>·</b> FOUNDATION PREVIEW</span><span>Designed for operational clarity <Zap size={12}/></span></footer>
+        </>}
       </div>
     </main>
   </div>;
