@@ -10,7 +10,7 @@ import { TelemetryEvent } from "./telemetry-event.model.js";
 import { createDeviceCredential, ingestTelemetry, telemetryEvents } from "./telemetry.service.js";
 
 export const telemetryRouter = Router();
-const idSchema = z.string().regex(/^[a-f\\d]{24}$/i);
+const idSchema = z.string().regex(/^[a-f\d]{24}$/i);
 const provisionSchema = z.object({
   facilityId: idSchema, assetId: idSchema,
   deviceCode: z.string().trim().min(3).max(64).regex(/^[a-zA-Z0-9._-]+$/),
