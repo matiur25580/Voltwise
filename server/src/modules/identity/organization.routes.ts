@@ -11,6 +11,7 @@ import { OrganizationInvitation } from "./invitation.model.js";
 import { User } from "./user.model.js";
 import { createHash, randomBytes } from "node:crypto";
 import { roles, type Role } from "./identity.types.js";
+import { canAssignRole, canInviteRole, canManageOwner } from "./organization.policy.js";
 
 export const organizationRouter = Router();
 organizationRouter.use(requireAuth);
@@ -47,8 +48,8 @@ organizationRouter.post("/:organizationId/switch", async (req: AuthenticatedRequ
     const membership = await Membership.findOne({ tenantId: organizationId, userId: req.auth!.userId, status: "active" });
     if (!membership) throw new AuthError("ORGANIZATION_ACCESS_DENIED", "You are not an active member of this organization.", 403);
     const currentRefreshToken = readRefreshCookie(req);
-    if (currentRefreshToken) await revokeRefreshToken(currentRefreshToken);
     const session = await issueSession(req.auth!.userId, organizationId, membership.role as Role);
+    if (currentRefreshToken) await revokeRefreshToken(currentRefreshToken);
     res.cookie("voltwise_refresh", session.refreshToken, refreshCookieOptions);
     await writeAudit(organizationId, req.auth!.userId, "organization.switched", "organization", organizationId);
     res.json({ data: { accessToken: session.accessToken, organizationId, role: membership.role } });
@@ -83,11 +84,11 @@ organizationRouter.patch("/members/:membershipId/role", requirePermission("membe
     const target = await Membership.findOne({ _id: membershipId, tenantId: req.auth!.tenantId, status: "active" });
     if (!target) throw new AuthError("MEMBER_NOT_FOUND", "Active organization member was not found.", 404);
     if (target.userId.toString() === req.auth!.userId) throw new AuthError("SELF_ROLE_CHANGE_DENIED", "You cannot change your own organization role.", 403);
-    if (role === "owner" && req.auth!.role !== "owner") throw new AuthError("ROLE_ESCALATION_DENIED", "Only an owner can assign the owner role.", 403);
-    if (req.auth!.role === "admin" && ["owner", "admin"].includes(role)) throw new AuthError("ROLE_ESCALATION_DENIED", "Administrators can assign operator, analyst, or viewer roles.", 403);
+    if (!canAssignRole(req.auth!.role, role)) throw new AuthError("ROLE_ESCALATION_DENIED", "Your role cannot assign the requested organization role.", 403);
     if (target.role === "owner" && role !== "owner") {
       const owners = await Membership.countDocuments({ tenantId: req.auth!.tenantId, role: "owner", status: "active" });
       if (owners <= 1) throw new AuthError("LAST_OWNER_REQUIRED", "An organization must retain at least one active owner.", 409);
+      if (!canManageOwner(req.auth!.role, owners)) throw new AuthError("OWNER_MANAGEMENT_DENIED", "Only an owner can change another owner's role.", 403);
     }
     const previousRole = target.role;
     target.role = role;
@@ -107,7 +108,7 @@ organizationRouter.patch("/members/:membershipId/status", requirePermission("mem
     if (target.role === "owner" && status === "suspended") {
       const owners = await Membership.countDocuments({ tenantId: req.auth!.tenantId, role: "owner", status: "active" });
       if (owners <= 1) throw new AuthError("LAST_OWNER_REQUIRED", "An organization must retain at least one active owner.", 409);
-      if (req.auth!.role !== "owner") throw new AuthError("OWNER_MANAGEMENT_DENIED", "Only an owner can suspend another owner.", 403);
+      if (!canManageOwner(req.auth!.role, owners)) throw new AuthError("OWNER_MANAGEMENT_DENIED", "Only an owner can suspend another owner.", 403);
     }
     target.status = status;
     await target.save();
@@ -120,13 +121,15 @@ organizationRouter.patch("/members/:membershipId/status", requirePermission("mem
 organizationRouter.post("/invitations", requirePermission("members:manage"), async (req: AuthenticatedRequest, res, next) => {
   try {
     const input = z.object({ email: z.string().trim().email().max(254), role: inviteRoleSchema }).parse(req.body);
-    if (req.auth!.role === "admin" && input.role === "admin") {
-      throw new AuthError("ROLE_ESCALATION_DENIED", "Administrators cannot invite another administrator.", 403);
+    if (!canInviteRole(req.auth!.role, input.role)) {
+      throw new AuthError("ROLE_ESCALATION_DENIED", "Your role cannot invite a member with the requested role.", 403);
     }
     const email = input.email.toLowerCase();
     const targetUser = await User.findOne({ email }).select("_id");
-    if (targetUser && await Membership.exists({ tenantId: req.auth!.tenantId, userId: targetUser._id, status: "active" })) {
-      throw new AuthError("ALREADY_A_MEMBER", "This user is already an active organization member.", 409);
+    if (targetUser) {
+      const existingMembership = await Membership.findOne({ tenantId: req.auth!.tenantId, userId: targetUser._id });
+      if (existingMembership?.status === "active") throw new AuthError("ALREADY_A_MEMBER", "This user is already an active organization member.", 409);
+      if (existingMembership?.role === "owner") throw new AuthError("OWNER_INVITATION_DENIED", "An owner membership cannot be replaced by an invitation.", 409);
     }
     const pending = await OrganizationInvitation.findOne({
       tenantId: req.auth!.tenantId, email, status: "pending", expiresAt: { $gt: new Date() }
