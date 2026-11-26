@@ -5,6 +5,7 @@ import { requireAuth, requirePermission, type AuthenticatedRequest } from "../id
 import { AuditEvent } from "../identity/audit-event.model.js";
 import { Facility, facilityStatuses, facilityTypes } from "./facility.model.js";
 import { EnergyAsset, energyAssetStatuses, energyAssetTypes } from "./energy-asset.model.js";
+import { canDeleteFacility, escapeSearchTerm } from "./asset.policy.js";
 
 export const assetRouter = Router();
 assetRouter.use(requireAuth);
@@ -88,8 +89,8 @@ assetRouter.get("/facilities", requirePermission("energy:read"), async (req: Aut
     if (filters.status) query.status = z.enum(facilityStatuses).parse(filters.status);
     if (filters.type) query.type = z.enum(facilityTypes).parse(filters.type);
     if (filters.q) query.$or = [
-      { name: { $regex: regexEscape(filters.q), $options: "i" } },
-      { code: { $regex: regexEscape(filters.q), $options: "i" } }
+      { name: { $regex: escapeSearchTerm(filters.q), $options: "i" } },
+      { code: { $regex: escapeSearchTerm(filters.q), $options: "i" } }
     ];
     const [items, total] = await Promise.all([
       Facility.find(query).sort({ name: 1 }).skip((filters.page - 1) * filters.limit).limit(filters.limit).lean(),
@@ -135,7 +136,7 @@ assetRouter.delete("/facilities/:facilityId", requirePermission("assets:manage")
       Facility.countDocuments({ tenantId: req.auth!.tenantId, parentFacilityId: facilityId })
     ]);
     if (!facility) throw new AuthError("FACILITY_NOT_FOUND", "Facility was not found in this organization.", 404);
-    if (assetCount || childCount) throw new AuthError("FACILITY_NOT_EMPTY", "Move or decommission its assets and child facilities before deleting it.", 409);
+    if (!canDeleteFacility(assetCount, childCount)) throw new AuthError("FACILITY_NOT_EMPTY", "Move or decommission its assets and child facilities before deleting it.", 409);
     await facility.deleteOne();
     await audit(req, "facility.deleted", "facility", facilityId);
     res.status(204).send();
@@ -161,9 +162,9 @@ assetRouter.get("/assets", requirePermission("energy:read"), async (req: Authent
     if (filters.status) query.status = z.enum(energyAssetStatuses).parse(filters.status);
     if (filters.type) query.type = z.enum(energyAssetTypes).parse(filters.type);
     if (filters.q) query.$or = [
-      { name: { $regex: regexEscape(filters.q), $options: "i" } },
-      { assetTag: { $regex: regexEscape(filters.q), $options: "i" } },
-      { serialNumber: { $regex: regexEscape(filters.q), $options: "i" } }
+      { name: { $regex: escapeSearchTerm(filters.q), $options: "i" } },
+      { assetTag: { $regex: escapeSearchTerm(filters.q), $options: "i" } },
+      { serialNumber: { $regex: escapeSearchTerm(filters.q), $options: "i" } }
     ];
     const [items, total] = await Promise.all([
       EnergyAsset.find(query).populate({ path: "facilityId", select: "name code type" })
