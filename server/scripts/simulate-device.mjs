@@ -22,7 +22,7 @@ async function publish() {
       { metric: "energy_import", value: Number((power * intervalMs / 3_600_000).toFixed(5)), unit: "kWh", quality: "estimated" },
       { metric: "voltage", value: Number((228 + Math.random() * 8).toFixed(2)), unit: "V" },
       { metric: "frequency", value: Number((49.9 + Math.random() * 0.2).toFixed(3)), unit: "Hz" },
-      { metric: "power_factor", value: Number((0.91 + Math.random() * 0.08).toFixed(3)), unit: "%" }
+      { metric: "power_factor", value: Number((0.91 + Math.random() * 0.08).toFixed(3)), unit: "1" }
     ]
   };
   try {
