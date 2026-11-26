@@ -18,7 +18,7 @@ export class AuthError extends Error {
 
 export async function issueSession(userId: string, tenantId: string, role: Role, familyId = randomUUID()) {
   const accessToken = jwt.sign({ tenantId, role }, env.JWT_ACCESS_SECRET, {
-    subject: userId, expiresIn: env.ACCESS_TOKEN_TTL, issuer: "voltwise-api", audience: "voltwise-client"
+    subject: userId, expiresIn: env.ACCESS_TOKEN_TTL as jwt.SignOptions["expiresIn"], issuer: "voltwise-api", audience: "voltwise-client"
   });
   const refreshToken = randomBytes(48).toString("base64url");
   const tokenHash = hashToken(refreshToken);
@@ -62,7 +62,7 @@ export async function rotateRefreshToken(rawToken: string) {
     { _id: existing._id, revokedAt: null, expiresAt: { $gt: new Date() } },
     { $set: { revokedAt: new Date() } }, { new: true }
   );
-  if (!revoked) throw new AuthError("REFRESH_TOKEN_REUSE", "Refresh token has already been rotated.");
+  if (!revoked) {\n    await RefreshSession.updateMany({ familyId: existing.familyId, revokedAt: null }, { $set: { revokedAt: new Date() } });\n    throw new AuthError("REFRESH_TOKEN_REUSE", "Refresh token has already been rotated.");\n  }
   const membership = await Membership.findOne({ tenantId: existing.tenantId, userId: existing.userId, status: "active" });
   if (!membership) {
     await RefreshSession.updateMany({ familyId: existing.familyId, revokedAt: null }, { $set: { revokedAt: new Date() } });
