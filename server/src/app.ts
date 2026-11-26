@@ -6,6 +6,9 @@ import pinoHttp from "pino-http";
 import { env } from "./config/env.js";
 import { isDatabaseReady } from "./config/database.js";
 import { logger } from "./lib/logger.js";
+import { authRouter, organizationRouter } from "./modules/identity/index.js";
+import { AuthError } from "./modules/identity/auth.service.js";
+import { ZodError } from "zod";
 
 export const app = express();
 
@@ -26,55 +29,47 @@ app.use(rateLimit({
 }));
 
 app.get("/api/v1/health/live", (_req, res) => {
-  res.status(200).json({
-    status: "ok",
-    service: "voltwise-api",
-    timestamp: new Date().toISOString()
-  });
+  res.status(200).json({ status: "ok", service: "voltwise-api", timestamp: new Date().toISOString() });
 });
 
 app.get("/api/v1/health/ready", (_req, res) => {
   const databaseReady = isDatabaseReady();
   res.status(databaseReady ? 200 : 503).json({
-    status: databaseReady ? "ready" : "degraded",
-    service: "voltwise-api",
+    status: databaseReady ? "ready" : "degraded", service: "voltwise-api",
     timestamp: new Date().toISOString(),
-    checks: {
-      api: "ok",
-      database: databaseReady ? "connected" : "disconnected"
-    }
+    checks: { api: "ok", database: databaseReady ? "connected" : "disconnected" }
   });
 });
 
-// Backwards-friendly health endpoint reports readiness, not merely process liveness.
 app.get("/api/v1/health", (_req, res) => {
   const databaseReady = isDatabaseReady();
   res.status(databaseReady ? 200 : 503).json({
-    status: databaseReady ? "ok" : "degraded",
-    service: "voltwise-api",
+    status: databaseReady ? "ok" : "degraded", service: "voltwise-api",
     timestamp: new Date().toISOString(),
-    checks: {
-      api: "ok",
-      database: databaseReady ? "connected" : "disconnected"
-    }
+    checks: { api: "ok", database: databaseReady ? "connected" : "disconnected" }
   });
 });
 
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/organizations", organizationRouter);
+
 app.use((_req, res) => {
-  res.status(404).json({
-    error: {
-      code: "ROUTE_NOT_FOUND",
-      message: "The requested API route does not exist."
-    }
-  });
+  res.status(404).json({ error: { code: "ROUTE_NOT_FOUND", message: "The requested API route does not exist." } });
 });
 
 app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  if (error instanceof ZodError) {
+    res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Request validation failed.", details: error.flatten().fieldErrors } });
+    return;
+  }
+  if (error instanceof AuthError) {
+    res.status(error.status).json({ error: { code: error.code, message: error.message } });
+    return;
+  }
+  if (typeof error === "object" && error !== null && "code" in error && error.code === 11000) {
+    res.status(409).json({ error: { code: "RESOURCE_CONFLICT", message: "A resource with these details already exists." } });
+    return;
+  }
   logger.error({ err: error }, "Unhandled request error");
-  res.status(500).json({
-    error: {
-      code: "INTERNAL_SERVER_ERROR",
-      message: "An unexpected error occurred."
-    }
-  });
+  res.status(500).json({ error: { code: "INTERNAL_SERVER_ERROR", message: "An unexpected error occurred." } });
 });
