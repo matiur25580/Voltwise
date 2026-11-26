@@ -95,11 +95,11 @@ telemetryRouter.get("/telemetry/stream", requireAuth, requirePermission("energy:
   res.setHeader("Cache-Control", "no-cache, no-transform");
   res.setHeader("Connection", "keep-alive");
   res.flushHeaders();
-  res.write(`event: ready\\ndata: ${JSON.stringify({ connected: true })}\\n\\n`);
+  res.write(`event: ready\ndata: ${JSON.stringify({ connected: true })}\n\n`);
   const listener = (message: { tenantId: string; event: unknown }) => {
-    if (message.tenantId === tenantId) res.write(`event: reading\\ndata: ${JSON.stringify(message.event)}\\n\\n`);
+    if (message.tenantId === tenantId) res.write(`event: reading\ndata: ${JSON.stringify(message.event)}\n\n`);
   };
   telemetryEvents.on("reading", listener);
-  const heartbeat = setInterval(() => res.write(": heartbeat\\n\\n"), 25_000);
+  const heartbeat = setInterval(() => res.write(": heartbeat\n\n"), 25_000);
   res.on("close", () => { clearInterval(heartbeat); telemetryEvents.off("reading", listener); });
 });
