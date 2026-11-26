@@ -7,7 +7,8 @@ import { env } from "./config/env.js";
 import { isDatabaseReady } from "./config/database.js";
 import { logger } from "./lib/logger.js";
 import { authRouter, organizationRouter } from "./modules/identity/index.js";
-import { AuthError } from "./modules/identity/auth.service.js";\nimport { telemetryRouter } from "./modules/telemetry/telemetry.routes.js";
+import { AuthError } from "./modules/identity/auth.service.js";
+import { telemetryRouter } from "./modules/telemetry/telemetry.routes.js";
 import { assetRouter } from "./modules/assets/asset.routes.js";
 import { ZodError } from "zod";
 
@@ -52,7 +53,8 @@ app.get("/api/v1/health", (_req, res) => {
 });
 
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/organizations", organizationRouter);\napp.use("/api/v1", telemetryRouter);
+app.use("/api/v1/organizations", organizationRouter);
+app.use("/api/v1", telemetryRouter);
 app.use("/api/v1", assetRouter);
 
 app.use((_req, res) => {
