@@ -1,4 +1,6 @@
+import mongoose from "mongoose";
 import { app } from "./app.js";
+import { connectDatabase } from "./config/database.js";
 import { env } from "./config/env.js";
 import { logger } from "./lib/logger.js";
 
@@ -6,14 +8,23 @@ const server = app.listen(env.PORT, () => {
   logger.info({ port: env.PORT }, "Voltwise API started");
 });
 
+void connectDatabase().catch((error: unknown) => {
+  logger.error({ err: error }, "MongoDB connection failed; readiness checks will remain degraded");
+});
+
+let shuttingDown = false;
+
 const shutdown = (signal: string) => {
+  if (shuttingDown) return;
+  shuttingDown = true;
   logger.info({ signal }, "Shutdown signal received");
+
   server.close((error) => {
     if (error) {
       logger.error({ err: error }, "HTTP server shutdown failed");
-      process.exit(1);
+      process.exitCode = 1;
     }
-    process.exit(0);
+    void mongoose.disconnect().finally(() => process.exit());
   });
 };
 
