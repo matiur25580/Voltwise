@@ -1,13 +1,29 @@
 # Architecture Overview
 
-## Current foundation
+## Current platform
 
-Voltwise is a TypeScript npm-workspaces monorepo with two independently deployable applications:
+Voltwise is a TypeScript npm-workspaces monorepo:
 
-- **client:** React single-page application; presentation and client-side interaction only.
+- **client:** React single-page application.
 - **server:** Express API; authoritative business rules, authentication, authorization, tenant scoping, validation, and persistence.
 
-The browser must never be trusted to supply an authoritative tenant identifier or permission decision. After authentication is implemented, the API will derive the active tenant and permissions from verified server-side identity/membership context.
+## Identity and tenant isolation
+
+Identity models are separated into users, organizations, memberships, and refresh sessions. A user may belong to multiple organizations through membership records. Each tenant-owned collection must include an immutable `tenantId` reference, and every tenant-facing service must scope reads and writes using a trusted tenant context.
+
+The current API derives tenant context from a verified short-lived JWT and then re-checks active membership in MongoDB on every authenticated request. The role is loaded from the membership record rather than trusted from a stale client claim. The browser must never be trusted to supply an authoritative tenant identifier or permission decision.
+
+### Authentication lifecycle
+
+- Passwords are hashed with bcrypt (cost factor 12); plaintext passwords are never persisted.
+- Access tokens are signed JWTs with issuer, audience, subject, tenant, and a short configurable lifetime.
+- Refresh tokens are cryptographically random opaque values, stored only as SHA-256 hashes, and delivered in an HttpOnly cookie.
+- Refresh rotates the token, revokes the previous token, and detects reuse of a revoked token by revoking the remaining token family.
+- Logout revokes the presented refresh token. Production deployments must use HTTPS and a unique secret manager-provided JWT secret.
+
+### RBAC
+
+Roles currently include owner, admin, operator, analyst, and viewer. API middleware maps roles to explicit permissions. Membership status and role are reloaded server-side so a suspended or removed member cannot continue to access tenant APIs merely by holding an unexpired JWT.
 
 ## Target domain boundaries
 
@@ -22,10 +38,6 @@ The browser must never be trusted to supply an authoritative tenant identifier o
 | Maintenance | Asset health indicators, incidents, work orders |
 | Sustainability | Emissions factors, calculation provenance, reporting |
 | Platform operations | Audit events, notifications, jobs, observability |
-
-## Data isolation
-
-Every tenant-owned collection will include an immutable `tenantId` reference. API service methods must accept a trusted tenant context and include it in every read, update, and delete filter. Unique indexes that represent tenant-local uniqueness should include `tenantId`. Cross-tenant access tests are mandatory before the first tenant-facing release.
 
 ## Telemetry path (target)
 
@@ -50,3 +62,7 @@ Forecasts and optimization outputs are advisory. Every result should record mode
 - Redis for distributed rate limiting and background jobs when required.
 - Separate secrets per environment; no secrets in source control.
 - CI checks for type safety, tests, and production builds.
+
+## Hardening still required before production
+
+Configure distributed rate limiting, CSRF protection appropriate to the deployed cookie topology, email verification, password reset, account lockout/abuse monitoring, audit events, session/device management, and transaction-backed registration. Review refresh-token family revocation under concurrent refresh requests and configure MongoDB TTL/index migrations as part of deployment.
