@@ -29,7 +29,7 @@
 - [x] Asset lifecycle, status, manufacturer/model, serial, capacity, and metadata fields
 - [x] Tenant-scoped asset CRUD/list/detail APIs with facility ownership validation and soft decommissioning
 - [x] Audit events for facility and asset mutations
-- [ ] Cross-tenant integration tests and management dashboard workflows
+- [x] Responsive authenticated Facilities and Energy Assets registry views with create/register, search, summary counts, and decommission actions\n- [ ] Cross-tenant database integration tests, facility detail/edit workflows, and bulk import
 - [ ] Bulk import, facility geospatial search, and asset document attachments
 
 ## Milestone 4 — Telemetry and real-time operations
