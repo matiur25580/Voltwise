@@ -30,17 +30,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const accept = (body: AuthResponse) => {
-    setAccessToken(body.data.accessToken);
-    if (body.data.user) setUser(body.data.user);
-    if (body.data.organization) setOrganization(body.data.organization);
+  const accept = async (body: AuthResponse) => {
+    const token = body.data.accessToken;
+    setAccessToken(token);
+    const headers = { Authorization: `Bearer ${token}` };
+    const [profileResponse, organizationResponse] = await Promise.all([
+      fetch("/api/v1/auth/me", { headers }),
+      fetch("/api/v1/organizations/current", { headers })
+    ]);
+    if (profileResponse.ok) {
+      const profile = await profileResponse.json() as { data: { user: User; role: string } };
+      setUser(profile.data.user);
+      setOrganization((current) => ({ ...current, role: profile.data.role }));
+    } else if (body.data.user) setUser(body.data.user);
+    if (organizationResponse.ok) {
+      const result = await organizationResponse.json() as { data: { organization: { id: string; name: string; slug: string } } };
+      setOrganization((current) => ({ ...current, ...result.data.organization }));
+    } else if (body.data.organization) setOrganization(body.data.organization);
   };
 
   const refresh = useCallback(async () => {
     const response = await fetch("/api/v1/auth/refresh", { method: "POST", credentials: "include" });
     if (!response.ok) throw new Error(await readError(response));
     const body = await response.json() as AuthResponse;
-    accept(body);
+    await accept(body);
   }, []);
 
   useEffect(() => {
@@ -62,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       headers: { "content-type": "application/json" }, body: JSON.stringify(payload)
     });
     if (!response.ok) throw new Error(await readError(response));
-    accept(await response.json() as AuthResponse);
+    await accept(await response.json() as AuthResponse);
   };
 
   const login = async (email: string, password: string) => {
