@@ -24,7 +24,8 @@ function MetricCard({ label, value, note, trend, icon: Icon }: { label: string; 
   </article>;
 }
 
-export default function App() {
+function Dashboard() {
+  const { user, organization, logout } = useAuth();
   return <div className="app-shell">
     <aside className="sidebar">
       <div className="brand"><div className="brand-mark"><Zap size={20} fill="currentColor"/></div><div><strong>voltwise</strong><small>ENERGY INTELLIGENCE</small></div></div>
@@ -43,7 +44,7 @@ export default function App() {
         <a className="nav-item" href="#"><ShieldCheck size={17}/> Alerts & incidents <span className="nav-count">3</span></a>
         <a className="nav-item" href="#"><Settings2 size={17}/> Settings</a>
       </nav>
-      <div className="sidebar-bottom"><div className="support-card"><CircleHelp size={17}/><div><strong>Need a hand?</strong><small>Visit the product guide</small></div></div><div className="user-row"><div className="avatar">AM</div><div><strong>Alex Morgan</strong><small>Energy administrator</small></div><MoreHorizontal size={18}/></div></div>
+      <div className="sidebar-bottom"><div className="support-card"><CircleHelp size={17}/><div><strong>Need a hand?</strong><small>Visit the product guide</small></div></div><div className="user-row"><div className="avatar">U</div><div><strong>{user?.name ?? "Workspace member"}</strong><small>{user?.email ?? "Signed in"}</small></div><button className="logout-button" onClick={() => void logout()}>Sign out</button></div></div>
     </aside>
     <main className="main">
       <header className="topbar"><div className="mobile-brand"><Menu size={19}/> voltwise</div><div className="breadcrumbs">Workspace <span>/</span> <strong>Overview</strong></div><div className="top-actions"><div className="search-box"><Search size={15}/><span>Search anything...</span><kbd>⌘ K</kbd></div><button className="icon-button" aria-label="Help"><CircleHelp size={18}/></button><div className="avatar small">AM</div></div></header>
