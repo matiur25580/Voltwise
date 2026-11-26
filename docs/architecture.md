@@ -88,3 +88,13 @@ The `Facility` and `EnergyAsset` collections are organization-scoped. All API qu
 Each provisioned telemetry device is bound to one tenant, facility, and energy asset. Device codes are globally unique; 256-bit credentials are returned once and only SHA-256 hashes are persisted. HTTP ingestion authenticates the device independently of user sessions. The optional MQTT bridge resolves the same device identity from its topic and verifies the credential supplied in the message; production MQTT requires TLS and broker ACLs. Strict metric/unit validation, bounded timestamps, and a tenant/device/event unique key protect the ingestion boundary. Accepted events store their tenant, facility, asset, and device references from the trusted device record rather than from the payload.
 
 Historical event reads and the SSE stream are tenant-scoped. The initial SSE fan-out is process-local and is suitable for a single API process; multi-instance deployments require a shared event bus and replay strategy. The current ingestion path persists directly to MongoDB and does not yet include durable queue buffering, backpressure, dead-letter handling, or automated retention.
+
+
+## Energy analytics boundaries
+
+- Analytics queries are scoped to the authenticated tenant and optional tenant-owned asset filter.
+- Energy import/export totals are calculated only from `energy_import` / `energy_export` readings. Wh values are converted to kWh; kWh values remain unchanged.
+- Demand peaks are measured samples of `active_power`; W values are converted to kW. They are not interval-integrated demand.
+- Import cost is an indicative flat-rate estimate only when a caller supplies a tariff rate. It is not a utility bill or tariff-engine calculation.
+- Consumption anomaly flags compare a bucket with preceding positive buckets. They are heuristic screening signals, not fault diagnoses.
+- Buckets use UTC. Facility-local tariff calendars, forecast models, and persisted alert workflows remain future work.
