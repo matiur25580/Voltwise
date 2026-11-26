@@ -4,7 +4,7 @@
 
 Voltwise is an enterprise-oriented energy operations workspace for organizations that need to understand electricity demand, coordinate distributed energy assets, identify abnormal consumption, and make evidence-based optimization decisions.
 
-> **Project status:** Foundation milestone in active development. The current dashboard uses clearly labelled demonstration data. No live utility, meter, battery, inverter, or EV charger is connected yet.
+> **Project status:** Identity, organization management, and the first facility/energy-asset registry milestone are implemented in the development branch. The overview still contains clearly labelled demonstration metrics. Registry records are real application data, but no live utility, meter, battery, inverter, or EV charger telemetry is connected yet.
 
 ## Product vision
 
@@ -13,7 +13,7 @@ Voltwise brings facility energy data, distributed energy resources, forecasting,
 ## Planned capabilities
 
 - Organization workspaces, secure identity, granular RBAC, and tenant isolation
-- Facility, meter, equipment, solar, battery, and EV charger registries
+- Facility/site hierarchy and tenant-scoped registries for meters, equipment, solar, batteries, inverters, and EV chargers
 - Device telemetry ingestion and real-time operational updates
 - Energy demand and renewable generation forecasting
 - Consumption anomaly detection and explainable alerts
@@ -51,7 +51,7 @@ Voltwise brings facility energy data, distributed energy resources, forecasting,
 └── package.json            # npm workspaces and root scripts
 ```
 
-## Getting started
+## Current registry capabilities\n\nThe authenticated workspace includes Facilities and Energy Assets sections. Organization members with the appropriate permissions can create and manage facilities and register equipment. Facility and asset APIs enforce tenant scoping, unique organization-level codes/tags, facility ownership checks, bounded pagination, and audit events. Asset deletion is a decommissioning transition so registry history is retained. See [docs/api-authentication.md](docs/api-authentication.md) for the current endpoint contract.\n\n## Getting started
 
 ### Prerequisites
 
