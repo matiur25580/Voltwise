@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import type { CookieOptions } from "express";
 import { env } from "../../config/env.js";
-import { AuthError, issueSession } from "./auth.service.js";
+import { AuthError, issueSession, revokeRefreshToken } from "./auth.service.js";
 import { requireAuth, requirePermission, type AuthenticatedRequest } from "./auth.middleware.js";
 import { Organization } from "./organization.model.js";
 import { Membership } from "./membership.model.js";
@@ -17,6 +17,10 @@ const refreshCookieOptions: CookieOptions = {
   path: "/api/v1/auth", maxAge: env.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000
 };
 const roleSchema = z.enum(roles);
+const readRefreshCookie = (req: AuthenticatedRequest) => {
+  const raw = req.headers.cookie?.split(";").map((part) => part.trim()).find((part) => part.startsWith("voltwise_refresh="));
+  return raw ? decodeURIComponent(raw.slice("voltwise_refresh=".length)) : undefined;
+};
 const writeAudit = (tenantId: string, actorUserId: string, action: string, resourceType: string, resourceId: string, metadata: Record<string, unknown> = {}) =>
   AuditEvent.create({ tenantId, actorUserId, action, resourceType, resourceId, metadata });
 
@@ -34,9 +38,11 @@ organizationRouter.get("/", async (req: AuthenticatedRequest, res, next) => {
 
 organizationRouter.post("/:organizationId/switch", async (req: AuthenticatedRequest, res, next) => {
   try {
-    const organizationId = z.string().regex(/^[a-f\\d]{24}$/i).parse(req.params.organizationId);
+    const organizationId = z.string().regex(/^[a-f\d]{24}$/i).parse(req.params.organizationId);
     const membership = await Membership.findOne({ tenantId: organizationId, userId: req.auth!.userId, status: "active" });
     if (!membership) throw new AuthError("ORGANIZATION_ACCESS_DENIED", "You are not an active member of this organization.", 403);
+    const currentRefreshToken = readRefreshCookie(req);
+    if (currentRefreshToken) await revokeRefreshToken(currentRefreshToken);
     const session = await issueSession(req.auth!.userId, organizationId, membership.role as Role);
     res.cookie("voltwise_refresh", session.refreshToken, refreshCookieOptions);
     await writeAudit(organizationId, req.auth!.userId, "organization.switched", "organization", organizationId);
@@ -67,7 +73,7 @@ organizationRouter.get("/members", requirePermission("members:read"), async (req
 
 organizationRouter.patch("/members/:membershipId/role", requirePermission("members:manage"), async (req: AuthenticatedRequest, res, next) => {
   try {
-    const membershipId = z.string().regex(/^[a-f\\d]{24}$/i).parse(req.params.membershipId);
+    const membershipId = z.string().regex(/^[a-f\d]{24}$/i).parse(req.params.membershipId);
     const role = roleSchema.parse(req.body.role);
     const target = await Membership.findOne({ _id: membershipId, tenantId: req.auth!.tenantId, status: "active" });
     if (!target) throw new AuthError("MEMBER_NOT_FOUND", "Active organization member was not found.", 404);
@@ -88,7 +94,7 @@ organizationRouter.patch("/members/:membershipId/role", requirePermission("membe
 
 organizationRouter.patch("/members/:membershipId/status", requirePermission("members:manage"), async (req: AuthenticatedRequest, res, next) => {
   try {
-    const membershipId = z.string().regex(/^[a-f\\d]{24}$/i).parse(req.params.membershipId);
+    const membershipId = z.string().regex(/^[a-f\d]{24}$/i).parse(req.params.membershipId);
     const status = z.enum(["active", "suspended"]).parse(req.body.status);
     const target = await Membership.findOne({ _id: membershipId, tenantId: req.auth!.tenantId, status: { $in: ["active", "suspended"] } });
     if (!target) throw new AuthError("MEMBER_NOT_FOUND", "Organization member was not found.", 404);
