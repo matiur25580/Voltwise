@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import rateLimit from "express-rate-limit";
 import type { CookieOptions, Request, Response } from "express";
 import { AuthError, login, register, revokeRefreshToken, rotateRefreshToken } from "./auth.service.js";
 import { requireAuth, type AuthenticatedRequest } from "./auth.middleware.js";
@@ -7,13 +8,17 @@ import { User } from "./user.model.js";
 import { env } from "../../config/env.js";
 
 export const authRouter = Router();
+authRouter.use(rateLimit({
+  windowMs: 15 * 60 * 1000, limit: 20,
+  standardHeaders: "draft-8", legacyHeaders: false
+}));
 const registerSchema = z.object({
   name: z.string().trim().min(2).max(100),
   email: z.string().email().max(254),
   password: z.string().min(10).max(128),
   organizationName: z.string().trim().min(2).max(120)
 });
-const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1).max(128) });
+const loginSchema = z.object({ email: z.string().trim().email(), password: z.string().min(1).max(128) });
 const cookieOptions: CookieOptions = {
   httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "lax",
   path: "/api/v1/auth", maxAge: env.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000
