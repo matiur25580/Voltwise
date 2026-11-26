@@ -16,7 +16,8 @@ type AuthContextValue = {
   clearError: () => void;
 };
 
-const AuthContext = createContext<AuthContextValue | null>(null);\nlet refreshRequest: Promise<AuthResponse> | null = null;
+const AuthContext = createContext<AuthContextValue | null>(null);
+let refreshRequest: Promise<AuthResponse> | null = null;
 
 async function readError(response: Response) {
   const body = await response.json().catch(() => null) as { error?: { message?: string } } | null;
@@ -47,14 +48,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const result = await organizationResponse.json() as { data: { organization: { id: string; name: string; slug: string } } };
       setOrganization((current) => ({ ...current, ...result.data.organization }));
     } else if (body.data.organization) setOrganization(body.data.organization);
-  };
+  }, []);
 
   const refresh = useCallback(async () => {
-    const response = await fetch("/api/v1/auth/refresh", { method: "POST", credentials: "include" });
-    if (!response.ok) throw new Error(await readError(response));
-    const body = await response.json() as AuthResponse;
-    await accept(body);
-  }, []);
+    if (!refreshRequest) {
+      refreshRequest = fetch("/api/v1/auth/refresh", { method: "POST", credentials: "include" })
+        .then(async (response) => {
+          if (!response.ok) throw new Error(await readError(response));
+          return response.json() as Promise<AuthResponse>;
+        })
+        .finally(() => { refreshRequest = null; });
+    }
+    await accept(await refreshRequest);
+  }, [accept]);
 
   useEffect(() => {
     let active = true;
