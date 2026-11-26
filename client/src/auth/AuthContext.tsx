@@ -16,7 +16,7 @@ type AuthContextValue = {
   clearError: () => void;
 };
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+const AuthContext = createContext<AuthContextValue | null>(null);\nlet refreshRequest: Promise<AuthResponse> | null = null;
 
 async function readError(response: Response) {
   const body = await response.json().catch(() => null) as { error?: { message?: string } } | null;
@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const accept = async (body: AuthResponse) => {
+  const accept = useCallback(async (body: AuthResponse) => {
     const token = body.data.accessToken;
     setAccessToken(token);
     const headers = { Authorization: `Bearer ${token}` };
