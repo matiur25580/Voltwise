@@ -38,7 +38,7 @@ export default function FacilitiesPage({ mode }: { mode: "facilities" | "assets"
       if (query.trim()) params.set("q", query.trim());
       const [facilityResponse, assetResponse] = await Promise.all([
         apiFetch(`/api/v1/facilities?${params.toString()}`),
-        apiFetch("/api/v1/assets?page=1&limit=100")
+        apiFetch(`/api/v1/assets?page=1&limit=100${query.trim() ? `&q=${encodeURIComponent(query.trim())}` : ""}`)
       ]);
       if (!facilityResponse.ok || !assetResponse.ok) throw new Error("Unable to load your organization’s facility registry.");
       const [facilityBody, assetBody] = await Promise.all([
