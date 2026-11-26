@@ -6,7 +6,6 @@ import { AuthError, issueSession } from "./auth.service.js";
 import { requireAuth, requirePermission, type AuthenticatedRequest } from "./auth.middleware.js";
 import { Organization } from "./organization.model.js";
 import { Membership } from "./membership.model.js";
-import { User } from "./user.model.js";
 import { AuditEvent } from "./audit-event.model.js";
 import { roles, type Role } from "./identity.types.js";
 
@@ -25,13 +24,11 @@ organizationRouter.get("/", async (req: AuthenticatedRequest, res, next) => {
   try {
     const memberships = await Membership.find({ userId: req.auth!.userId, status: "active" })
       .populate({ path: "tenantId", select: "name slug" }).sort({ createdAt: 1 }).lean();
-    res.json({ data: memberships.map((membership) => ({
-      id: (membership.tenantId as unknown as { _id: { toString(): string }; name: string; slug: string })._id.toString(),
-      name: (membership.tenantId as unknown as { name: string }).name,
-      slug: (membership.tenantId as unknown as { slug: string }).slug,
-      role: membership.role,
-      active: membership.tenantId._id.toString() === req.auth!.tenantId
-    })) });
+    res.json({ data: memberships.map((membership) => {
+      const organization = membership.tenantId as unknown as { _id: { toString(): string }; name: string; slug: string };
+      return { id: organization._id.toString(), name: organization.name, slug: organization.slug,
+        role: membership.role, active: organization._id.toString() === req.auth!.tenantId };
+    }) });
   } catch (error) { next(error); }
 });
 
@@ -60,12 +57,11 @@ organizationRouter.get("/members", requirePermission("members:read"), async (req
   try {
     const members = await Membership.find({ tenantId: req.auth!.tenantId })
       .populate({ path: "userId", select: "name email status" }).sort({ createdAt: 1 }).lean();
-    res.json({ data: members.map((member) => ({
-      id: member._id.toString(), role: member.role, status: member.status, joinedAt: member.createdAt,
-      user: member.userId && typeof member.userId === "object" && "email" in member.userId
-        ? { id: member.userId._id.toString(), name: member.userId.name, email: member.userId.email }
-        : null
-    })) });
+    res.json({ data: members.map((member) => {
+      const user = member.userId as unknown as { _id: { toString(): string }; name: string; email: string } | null;
+      return { id: member._id.toString(), role: member.role, status: member.status, joinedAt: member.createdAt,
+        user: user && user.email ? { id: user._id.toString(), name: user.name, email: user.email } : null };
+    }) });
   } catch (error) { next(error); }
 });
 
