@@ -8,7 +8,7 @@ const server = app.listen(env.PORT, () => {
   logger.info({ port: env.PORT }, "Voltwise API started");
 });
 
-void connectDatabase().catch((error: unknown) => {
+void connectDatabase().then(() => {\n  startMqttAdapter(env.MQTT_BROKER_URL, env.MQTT_USERNAME, env.MQTT_PASSWORD);\n}).catch((error: unknown) => {
   logger.error({ err: error }, "MongoDB connection failed; readiness checks will remain degraded");
 });
 
