@@ -9,7 +9,7 @@ describe("telemetry contracts", () => {
       readings: [{ metric: "active_power", value: 12.4, unit: "kW" }]
     });
     expect(payload.readings).toHaveLength(1);
-    expect(payload.readings[0].quality).toBeUndefined();
+    expect(payload.readings[0]?.quality).toBeUndefined();
     expect(telemetryPayloadSchema.safeParse({ eventId: "meter-001-0002", timestamp: new Date().toISOString(), tenantId: "untrusted", readings: [{ metric: "power_factor", value: 0.97, unit: "1" }] }).success).toBe(true);
   });
 
