@@ -65,7 +65,7 @@ async function assertParentInTenant(tenantId: string, parentId: string | null | 
     if (cursor === currentId) throw new AuthError("FACILITY_HIERARCHY_CYCLE", "This parent would create a facility hierarchy cycle.", 409);
     if (visited.has(cursor)) throw new AuthError("FACILITY_HIERARCHY_CORRUPT", "The existing facility hierarchy contains a cycle.", 409);
     visited.add(cursor);
-    const parent = await Facility.findOne({ _id: cursor, tenantId }).select("parentFacilityId").lean();
+    const parent: { parentFacilityId?: { toString(): string } | null } | null = await Facility.findOne({ _id: cursor, tenantId }).select("parentFacilityId").lean();
     if (!parent) throw new AuthError("PARENT_FACILITY_NOT_FOUND", "Parent facility does not exist in this organization.", 404);
     cursor = parent.parentFacilityId?.toString() ?? null;
   }
