@@ -9,12 +9,12 @@ describe("telemetry contracts", () => {
       readings: [{ metric: "active_power", value: 12.4, unit: "kW" }]
     });
     expect(payload.readings).toHaveLength(1);
-    expect(payload.readings[0].quality).toBeUndefined();
+    expect(payload.readings[0].quality).toBeUndefined();\n    expect(telemetryPayloadSchema.safeParse({ eventId: "meter-001-0002", timestamp: new Date().toISOString(), tenantId: "untrusted", readings: [{ metric: "power_factor", value: 0.97, unit: "1" }] }).success).toBe(true);
   });
 
   it("rejects empty, oversized, non-finite, or unknown measurements", () => {
     const base = { eventId: "meter-001-0001", timestamp: new Date().toISOString() };
-    expect(telemetryPayloadSchema.safeParse({ ...base, readings: [] }).success).toBe(false);
+    expect(telemetryPayloadSchema.safeParse({ ...base, tenantId: "untrusted", readings: [{ metric: "active_power", value: 1, unit: "kW" }] }).success).toBe(false);\n    expect(telemetryPayloadSchema.safeParse({ ...base, readings: [] }).success).toBe(false);
     expect(telemetryPayloadSchema.safeParse({ ...base, readings: [{ metric: "made_up", value: 1, unit: "kW" }] }).success).toBe(false);
     expect(telemetryPayloadSchema.safeParse({ ...base, readings: [{ metric: "active_power", value: Infinity, unit: "kW" }] }).success).toBe(false);
     expect(telemetryPayloadSchema.safeParse({ ...base, readings: Array.from({ length: 51 }, () => ({ metric: "active_power", value: 1, unit: "kW" })) }).success).toBe(false);
