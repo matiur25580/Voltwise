@@ -21,7 +21,7 @@ const registerSchema = z.object({
 const loginSchema = z.object({ email: z.string().trim().email(), password: z.string().min(1).max(128) });
 const cookieOptions: CookieOptions = {
   httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "lax",
-  path: "/api/v1/auth", maxAge: env.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000
+  path: "/", maxAge: env.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000
 };
 const readRefreshCookie = (req: Request) => {
   const raw = req.headers.cookie?.split(";").map((part) => part.trim()).find((part) => part.startsWith("voltwise_refresh="));
@@ -29,7 +29,7 @@ const readRefreshCookie = (req: Request) => {
 };
 const setRefreshCookie = (res: Response, token: string) => res.cookie("voltwise_refresh", token, cookieOptions);
 const clearRefreshCookie = (res: Response) => res.clearCookie("voltwise_refresh", {
-  httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "lax", path: "/api/v1/auth"
+  httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "lax", path: "/"
 });
 
 authRouter.post("/register", async (req, res, next) => {
