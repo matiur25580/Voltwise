@@ -55,7 +55,7 @@
 - [x] Battery dispatch simulator with power, capacity, and reserve-state constraints
 - [x] Explainable interval recommendations and optional indicative tariff estimate
 - [x] Proposal approval/rejection workflow with audit history
-- [ ] Time-of-use charging, renewable/load forecasting, EV/HVAC flexibility, and grid constraint optimization
+- [x] Time-of-use battery tariff schedule heuristic with SoC, charge/discharge power, and round-trip-efficiency constraints\n- [ ] Solar-aware charging, renewable/load forecasting, EV/HVAC flexibility, and grid constraint optimization
 - [ ] Physical dispatch integration, telemetry-confirmed execution, and outcome measurement
 
 ## Milestone 7 — Maintenance, sustainability, and AI assistant
