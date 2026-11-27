@@ -13,6 +13,6 @@ describe("time-of-use battery schedule",()=>{
  });
  it("never reports negative savings as positive",()=>{
   const r=optimizeTimeOfUseSchedule({...base,tariffRatesInrPerKwh:[2,2,20,20]});
-  expect(r.summary.estimatedSavingsInr).toBeGreaterThanOrEqual(0);
+  expect(r.summary.estimatedArbitrageMarginInr).toBeGreaterThanOrEqual(0);
  });
 });
