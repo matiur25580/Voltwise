@@ -12,7 +12,8 @@ export function optimizeTimeOfUseSchedule(input:TariffOptimizationInput) {
  const low=sorted[Math.floor((sorted.length-1)*0.25)]?.rate ?? 0;
  const high=sorted[Math.ceil((sorted.length-1)*0.75)]?.rate ?? low;
  const threshold=(low+high)/2;
- const schedule=input.tariffRatesInrPerKwh.map((rate,index)=>{\n  const hasLaterPeak=input.tariffRatesInrPerKwh.slice(index+1).some(futureRate=>futureRate>threshold);
+ const schedule=input.tariffRatesInrPerKwh.map((rate,index)=>{
+  const hasLaterPeak=input.tariffRatesInrPerKwh.slice(index+1).some(futureRate=>futureRate>threshold);
   let action:"charge"|"discharge"|"hold"="hold",powerKw=0,energyChangeKwh=0;
   if(rate<=threshold && hasLaterPeak && energy<maxEnergy){
    powerKw=Math.min(input.maxChargeKw,(maxEnergy-energy)/(hours*efficiency));
