@@ -8,7 +8,7 @@ import { EnergyAsset } from "../assets/energy-asset.model.js";
 import { TariffOptimization } from "./tariff-optimization.model.js";
 import { optimizeTimeOfUseSchedule } from "./tariff-optimization.service.js";
 export const tariffOptimizationRouter=Router();
-const id=z.string().regex(/^[a-f\\d]{24}$/i);
+const id=z.string().regex(/^[a-f0-9]{24}$/i);
 const createSchema=z.object({
  name:z.string().trim().min(3).max(120),batteryAssetIds:z.array(id).min(1).max(20),
  intervalMinutes:z.number().int().refine(x=>[15,30,60].includes(x)),
