@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { BatteryCharging, Check, Clock3, Play, RefreshCw, ShieldCheck, X } from "lucide-react";
 import { useAuth } from "./auth/AuthContext";
 
@@ -50,7 +50,7 @@ export default function FlexibilityPage() {
 
   useEffect(() => { void load(); }, [load]);
 
-  const createSimulation = async (event: React.FormEvent) => {
+  const createSimulation = async (event: FormEvent) => {
     event.preventDefault(); setSaving(true); setError(""); setSuccess("");
     const baselineLoadKw = profile.split(",").map((part) => Number(part.trim()));
     if (!baselineLoadKw.length || baselineLoadKw.some((value) => !Number.isFinite(value) || value < 0)) {
