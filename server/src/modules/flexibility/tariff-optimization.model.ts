@@ -13,7 +13,7 @@ const schema=new Schema({
  initialSocPercent:{type:Number,required:true}, minimumSocPercent:{type:Number,required:true}, maximumSocPercent:{type:Number,required:true},
  roundTripEfficiencyPercent:{type:Number,required:true}, tariffRatesInrPerKwh:{type:[Number],required:true},
  schedule:{type:[intervalSchema],required:true},
- summary:{totalGridCostInr:{type:Number,required:true},estimatedSavingsInr:{type:Number,required:true},chargedEnergyKwh:{type:Number,required:true},dischargedEnergyKwh:{type:Number,required:true}},
+ summary:{totalGridCostInr:{type:Number,required:true},estimatedArbitrageMarginInr:{type:Number,required:true},chargedEnergyKwh:{type:Number,required:true},dischargedEnergyKwh:{type:Number,required:true}},
  status:{type:String,enum:["proposed","approved","rejected"],default:"proposed",required:true},
  decisionNote:{type:String,trim:true,maxlength:1000,default:""},
  createdBy:{type:Schema.Types.ObjectId,ref:"User",required:true},decidedBy:{type:Schema.Types.ObjectId,ref:"User",default:null},decidedAt:{type:Date,default:null}
