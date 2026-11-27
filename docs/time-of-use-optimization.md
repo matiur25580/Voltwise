@@ -7,4 +7,4 @@ Voltwise includes an indicative tariff-aware battery scheduling heuristic. Opera
 - Tariff values are operator-provided assumptions; no utility tariff is automatically inferred.
 - The schedule is not a dispatch command and does not control a physical battery.
 - It assumes one aggregate battery and excludes degradation cost, demand charges, taxes, network limits, export compensation, solar forecasts, and telemetry-confirmed state of charge.
-- The estimated arbitrage margin is not verified bill savings. Review all assumptions before operational use.
+- The estimated arbitrage margin is a modeled difference between tariff-weighted charge cost and discharge value. It is not a baseline bill comparison or verified bill savings. Review all assumptions before operational use.
