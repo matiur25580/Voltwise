@@ -12,6 +12,7 @@ import { telemetryRouter } from "./modules/telemetry/telemetry.routes.js";
 import { analyticsRouter } from "./modules/analytics/analytics.routes.js";
 import { assetRouter } from "./modules/assets/asset.routes.js";
 import { flexibilityRouter } from "./modules/flexibility/flexibility.routes.js";
+import { tariffOptimizationRouter } from "./modules/flexibility/tariff-optimization.routes.js";
 import { ZodError } from "zod";
 
 export const app = express();
@@ -60,6 +61,7 @@ app.use("/api/v1", analyticsRouter);
 app.use("/api/v1", telemetryRouter);
 app.use("/api/v1", assetRouter);
 app.use("/api/v1", flexibilityRouter);
+app.use("/api/v1", tariffOptimizationRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: { code: "ROUTE_NOT_FOUND", message: "The requested API route does not exist." } });
