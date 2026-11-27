@@ -41,7 +41,13 @@ flexibilityRouter.post("/flexibility/simulations", requireAuth, requirePermissio
       return sum + (unit === "mwh" ? value * 1000 : unit === "kwh" ? value : 0);
     }, 0);
     if (batteryCapacityKwh <= 0) throw new AuthError("BATTERY_CAPACITY_MISSING", "Selected battery assets need a positive capacity recorded in kWh or MWh.", 400);
-    const dispatch = simulateBatteryDispatch({ ...input, batteryCapacityKwh });
+    const dispatch = simulateBatteryDispatch({
+      baselineLoadKw: input.baselineLoadKw, intervalMinutes: input.intervalMinutes,
+      targetDemandKw: input.targetDemandKw, batteryCapacityKwh,
+      maxDischargeKw: input.maxDischargeKw, initialSocPercent: input.initialSocPercent,
+      reserveSocPercent: input.reserveSocPercent,
+      ...(input.tariffRatesPerKwh ? { tariffRatesPerKwh: input.tariffRatesPerKwh } : {})
+    });
     const plan = await FlexibilityPlan.create({
       ...input, tenantId, facilityId: new Types.ObjectId(facilityId),
       batteryAssetIds: batteries.map((item) => item._id), batteryCapacityKwh,
@@ -74,7 +80,7 @@ flexibilityRouter.post("/flexibility/simulations/:planId/decision", requireAuth,
       if (!exists) throw new AuthError("FLEXIBILITY_PLAN_NOT_FOUND", "Simulation was not found in this organization.", 404);
       throw new AuthError("FLEXIBILITY_PLAN_ALREADY_DECIDED", "Only proposed simulations can be approved or rejected.", 409);
     }
-    await AuditEvent.create({ tenantId: req.auth!.tenantId, actorUserId: req.auth!.userId, action: "flexibility.simulation." + input.decision, resourceType: "flexibility_plan", resourceId: plan.id, metadata: { note: input.note, avoidedEnergyKwh: plan.summary.avoidedEnergyKwh } });
+    await AuditEvent.create({ tenantId: req.auth!.tenantId, actorUserId: req.auth!.userId, action: "flexibility.simulation." + input.decision, resourceType: "flexibility_plan", resourceId: plan.id, metadata: { note: input.note, avoidedEnergyKwh: plan.summary?.avoidedEnergyKwh ?? 0 } });
     res.json({ data: plan });
   } catch (error) { next(error); }
 });
