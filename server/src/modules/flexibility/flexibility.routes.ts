@@ -60,12 +60,19 @@ flexibilityRouter.get("/flexibility/simulations", requireAuth, requirePermission
 flexibilityRouter.post("/flexibility/simulations/:planId/decision", requireAuth, requirePermission("energy:write"), async (req: AuthenticatedRequest, res, next) => {
   try {
     const planId = idSchema.parse(req.params.planId), input = decisionSchema.parse(req.body);
-    const plan = await FlexibilityPlan.findOne({ _id: planId, tenantId: req.auth!.tenantId });
-    if (!plan) throw new AuthError("FLEXIBILITY_PLAN_NOT_FOUND", "Simulation was not found in this organization.", 404);
-    if (plan.status !== "proposed") throw new AuthError("FLEXIBILITY_PLAN_ALREADY_DECIDED", "Only proposed simulations can be approved or rejected.", 409);
-    plan.status = input.decision === "approve" ? "approved" : "rejected";
-    plan.decisionNote = input.note; plan.decidedBy = new Types.ObjectId(req.auth!.userId); plan.decidedAt = new Date();
-    await plan.save();
+    const plan = await FlexibilityPlan.findOneAndUpdate(
+      { _id: planId, tenantId: req.auth!.tenantId, status: "proposed" },
+      { $set: {
+        status: input.decision === "approve" ? "approved" : "rejected",
+        decisionNote: input.note, decidedBy: new Types.ObjectId(req.auth!.userId), decidedAt: new Date()
+      } },
+      { new: true, runValidators: true }
+    );
+    if (!plan) {
+      const exists = await FlexibilityPlan.exists({ _id: planId, tenantId: req.auth!.tenantId });
+      if (!exists) throw new AuthError("FLEXIBILITY_PLAN_NOT_FOUND", "Simulation was not found in this organization.", 404);
+      throw new AuthError("FLEXIBILITY_PLAN_ALREADY_DECIDED", "Only proposed simulations can be approved or rejected.", 409);
+    }
     await AuditEvent.create({ tenantId: req.auth!.tenantId, actorUserId: req.auth!.userId, action: "flexibility.simulation." + input.decision, resourceType: "flexibility_plan", resourceId: plan.id, metadata: { note: input.note, avoidedEnergyKwh: plan.summary.avoidedEnergyKwh } });
     res.json({ data: plan });
   } catch (error) { next(error); }
