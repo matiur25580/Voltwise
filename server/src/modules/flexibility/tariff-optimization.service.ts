@@ -12,9 +12,9 @@ export function optimizeTimeOfUseSchedule(input:TariffOptimizationInput) {
  const low=sorted[Math.floor((sorted.length-1)*0.25)]?.rate ?? 0;
  const high=sorted[Math.ceil((sorted.length-1)*0.75)]?.rate ?? low;
  const threshold=(low+high)/2;
- const schedule=input.tariffRatesInrPerKwh.map((rate,index)=>{
+ const schedule=input.tariffRatesInrPerKwh.map((rate,index)=>{\n  const hasLaterPeak=input.tariffRatesInrPerKwh.slice(index+1).some(futureRate=>futureRate>threshold);
   let action:"charge"|"discharge"|"hold"="hold",powerKw=0,energyChangeKwh=0;
-  if(rate<=threshold && energy<maxEnergy){
+  if(rate<=threshold && hasLaterPeak && energy<maxEnergy){
    powerKw=Math.min(input.maxChargeKw,(maxEnergy-energy)/(hours*efficiency));
    energyChangeKwh=powerKw*hours*efficiency;
    if(powerKw>0){action="charge";energy+=energyChangeKwh;}
@@ -29,5 +29,5 @@ export function optimizeTimeOfUseSchedule(input:TariffOptimizationInput) {
  const totalGridCostInr=schedule.reduce((sum,item)=>sum+item.gridCostInr,0);
  const chargedEnergyKwh=schedule.filter(x=>x.action==="charge").reduce((sum,x)=>sum+x.powerKw*hours,0);
  const dischargedEnergyKwh=schedule.filter(x=>x.action==="discharge").reduce((sum,x)=>sum+x.powerKw*hours,0);
- return {schedule,summary:{totalGridCostInr:Number(totalGridCostInr.toFixed(2)),estimatedSavingsInr:Number(Math.max(0,-totalGridCostInr).toFixed(2)),chargedEnergyKwh:Number(chargedEnergyKwh.toFixed(3)),dischargedEnergyKwh:Number(dischargedEnergyKwh.toFixed(3))}};
+ return {schedule,summary:{totalGridCostInr:Number(totalGridCostInr.toFixed(2)),estimatedArbitrageMarginInr:Number(Math.max(0,-totalGridCostInr).toFixed(2)),chargedEnergyKwh:Number(chargedEnergyKwh.toFixed(3)),dischargedEnergyKwh:Number(dischargedEnergyKwh.toFixed(3))}};
 }
