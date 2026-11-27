@@ -32,7 +32,7 @@ tariffOptimizationRouter.post("/flexibility/tariff-optimizations",requireAuth,re
   if(capacity<=0)throw new AuthError("BATTERY_CAPACITY_MISSING","Selected batteries need capacity in kWh or MWh.",400);
   const optimized=optimizeTimeOfUseSchedule({...input,batteryCapacityKwh:capacity});
   const plan=await TariffOptimization.create({...input,tenantId,facilityId:new Types.ObjectId(facilities[0]),batteryAssetIds:batteries.map(x=>x._id),batteryCapacityKwh:capacity,...optimized,createdBy:req.auth!.userId,status:"proposed"});
-  await AuditEvent.create({tenantId,actorUserId:req.auth!.userId,action:"flexibility.tariff_optimization.created",resourceType:"tariff_optimization",resourceId:plan.id,metadata:{batteryAssetIds:ids,estimatedArbitrageMarginInr:optimized.summary.estimatedSavingsInr}});
+  await AuditEvent.create({tenantId,actorUserId:req.auth!.userId,action:"flexibility.tariff_optimization.created",resourceType:"tariff_optimization",resourceId:plan.id,metadata:{batteryAssetIds:ids,estimatedArbitrageMarginInr:optimized.summary.estimatedArbitrageMarginInr}});
   res.status(201).json({data:plan});
  }catch(error){next(error);}
 });
