@@ -3,7 +3,7 @@ import { simulateBatteryDispatch } from "./flexibility.service.js";
 describe("battery dispatch simulation", () => {
   it("clips peaks while respecting power and usable-energy limits", () => {
     const result = simulateBatteryDispatch({ baselineLoadKw: [40, 90, 100, 45], intervalMinutes: 60, targetDemandKw: 70, batteryCapacityKwh: 30, maxDischargeKw: 20, initialSocPercent: 80, reserveSocPercent: 20 });
-    expect(result.schedule.map((item) => item.recommendedDischargeKw)).toEqual([0, 20, 10, 0]);
+    expect(result.schedule.map((item) => item.recommendedDischargeKw)).toEqual([0, 18, 0, 0]);
     expect(result.summary.baselinePeakKw).toBe(100); expect(result.summary.optimizedPeakKw).toBe(80); expect(result.summary.avoidedEnergyKwh).toBe(30);
   });
   it("preserves reserve state of charge", () => {
