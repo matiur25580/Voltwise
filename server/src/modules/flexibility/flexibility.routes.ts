@@ -43,8 +43,9 @@ flexibilityRouter.post("/flexibility/simulations", requireAuth, requirePermissio
     if (batteryCapacityKwh <= 0) throw new AuthError("BATTERY_CAPACITY_MISSING", "Selected battery assets need a positive capacity recorded in kWh or MWh.", 400);
     const dispatch = simulateBatteryDispatch({ ...input, batteryCapacityKwh });
     const plan = await FlexibilityPlan.create({
-      tenantId, facilityId: new Types.ObjectId(facilityId), batteryAssetIds: batteries.map((item) => item._id),
-      ...input, batteryCapacityKwh, ...dispatch, createdBy: req.auth!.userId, status: "proposed"
+      ...input, tenantId, facilityId: new Types.ObjectId(facilityId),
+      batteryAssetIds: batteries.map((item) => item._id), batteryCapacityKwh,
+      ...dispatch, createdBy: req.auth!.userId, status: "proposed"
     });
     await AuditEvent.create({ tenantId, actorUserId: req.auth!.userId, action: "flexibility.simulation.created", resourceType: "flexibility_plan", resourceId: plan.id, metadata: { batteryAssetIds: batteryIds, avoidedEnergyKwh: dispatch.summary.avoidedEnergyKwh } });
     res.status(201).json({ data: plan });
