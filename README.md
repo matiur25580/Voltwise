@@ -4,7 +4,7 @@
 
 Voltwise is an enterprise-oriented energy operations workspace for organizations that need to understand electricity demand, coordinate distributed energy assets, identify abnormal consumption, and make evidence-based optimization decisions.
 
-> **Project status:** Identity, organization management, and the first facility/energy-asset registry milestone are implemented in the development branch. The overview still contains clearly labelled demonstration metrics. Registry records are real application data, but no live utility, meter, battery, inverter, or EV charger telemetry is connected yet.
+> **Project status:** Identity, organization management, facility/asset registry, and the first device telemetry milestone are implemented on the development branch. Registered devices can submit validated readings through HTTP or the optional MQTT bridge; the workspace streams new events. The overview still contains clearly labelled demonstration metrics, and local simulator readings are synthetic rather than physical meter data.
 
 ## Product vision
 
@@ -14,7 +14,7 @@ Voltwise brings facility energy data, distributed energy resources, forecasting,
 
 - Organization workspaces, secure identity, granular RBAC, and tenant isolation
 - Facility/site hierarchy and tenant-scoped registries for meters, equipment, solar, batteries, inverters, and EV chargers
-- Device telemetry ingestion and real-time operational updates
+- Device telemetry ingestion via HTTP/MQTT and tenant-scoped real-time operational updates
 - Energy demand and renewable generation forecasting
 - Consumption anomaly detection and explainable alerts
 - Battery and flexible-load optimization simulation
@@ -33,7 +33,7 @@ Voltwise brings facility energy data, distributed energy resources, forecasting,
 | Data | MongoDB, Mongoose |
 | Validation | Zod |
 | Security | Helmet, CORS policy, rate limiting (foundation) |
-| Real-time (planned) | Socket.IO, MQTT |
+| Real-time | MQTT.js adapter, Server-Sent Events |
 | Jobs/cache (planned) | Redis, BullMQ |
 | Testing (planned) | Vitest, Supertest, Playwright |
 | Delivery | Docker Compose, GitHub Actions |
@@ -51,7 +51,11 @@ Voltwise brings facility energy data, distributed energy resources, forecasting,
 └── package.json            # npm workspaces and root scripts
 ```
 
-## Current registry capabilities\n\nThe authenticated workspace includes Facilities and Energy Assets sections. Organization members with the appropriate permissions can create and manage facilities and register equipment. Facility and asset APIs enforce tenant scoping, unique organization-level codes/tags, facility ownership checks, bounded pagination, and audit events. Asset deletion is a decommissioning transition so registry history is retained. See [docs/api-authentication.md](docs/api-authentication.md) for the current endpoint contract.\n\n## Getting started
+## Current registry capabilities\n\nThe authenticated workspace includes Facilities and Energy Assets sections. Organization members with the appropriate permissions can create and manage facilities and register equipment. Facility and asset APIs enforce tenant scoping, unique organization-level codes/tags, facility ownership checks, bounded pagination, and audit events. Asset deletion is a decommissioning transition so registry history is retained. See [docs/api-authentication.md](docs/api-authentication.md) for the current endpoint contract.\n\n## Telemetry quick start
+
+See [docs/telemetry-ingestion.md](docs/telemetry-ingestion.md) for device provisioning, the HTTP/MQTT payload contract, and security requirements. After provisioning a device in the Live telemetry workspace, start the local simulator with `DEVICE_CODE` and `DEVICE_KEY` environment variables using `npm run simulate:device`.
+
+## Getting started
 
 ### Prerequisites
 

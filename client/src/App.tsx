@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "./auth/AuthContext";
 import FacilitiesPage from "./FacilitiesPage";
+import TelemetryPage from "./TelemetryPage";
 import AuthScreen from "./auth/AuthScreen";
 import { Activity, ArrowDownRight, ArrowUpRight, BatteryCharging, Building2, ChevronDown, CircleHelp, Command, Download, Gauge, Leaf, Menu, MoreHorizontal, PlugZap, RadioTower, Search, Settings2, ShieldCheck, Sun, Zap } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -28,7 +29,7 @@ function MetricCard({ label, value, note, trend, icon: Icon }: { label: string; 
 
 function Dashboard() {
   const { user, organization, logout } = useAuth();
-  const [activePage, setActivePage] = useState<"overview" | "facilities" | "assets">("overview");
+  const [activePage, setActivePage] = useState<"overview" | "facilities" | "assets" | "telemetry">("overview");
   return <div className="app-shell">
     <aside className="sidebar">
       <div className="brand"><div className="brand-mark"><Zap size={20} fill="currentColor"/></div><div><strong>voltwise</strong><small>ENERGY INTELLIGENCE</small></div></div>
@@ -37,6 +38,7 @@ function Dashboard() {
       <nav>
         <button className={`nav-item ${activePage === "overview" ? "active" : ""}`} onClick={() => setActivePage("overview")}><Gauge size={17}/> Overview</button>
         <button className={`nav-item ${activePage === "facilities" ? "active" : ""}`} onClick={() => setActivePage("facilities")}><Building2 size={17}/> Facilities</button>
+        <button className={`nav-item ${activePage === "telemetry" ? "active" : ""}`} onClick={() => setActivePage("telemetry")}><RadioTower size={17}/> Live telemetry</button>
         <button className="nav-item" onClick={() => setActivePage("overview")}><Activity size={17}/> Energy analytics</button>
         <button className={`nav-item ${activePage === "assets" ? "active" : ""}`} onClick={() => setActivePage("assets")}><BatteryCharging size={17}/> Energy assets</button>
         <button className="nav-item" onClick={() => setActivePage("overview")}><PlugZap size={17}/> Demand response</button>
@@ -52,7 +54,7 @@ function Dashboard() {
     <main className="main">
       <header className="topbar"><div className="mobile-brand"><Menu size={19}/> voltwise</div><div className="breadcrumbs">Workspace <span>/</span> <strong>Overview</strong></div><div className="top-actions"><div className="search-box"><Search size={15}/><span>Search anything...</span><kbd>⌘ K</kbd></div><button className="icon-button" aria-label="Help"><CircleHelp size={18}/></button><div className="avatar small">AM</div></div></header>
       <div className="content">
-        {activePage === "facilities" ? <FacilitiesPage mode="facilities"/> : activePage === "assets" ? <FacilitiesPage mode="assets"/> : <>
+        {activePage === "telemetry" ? <TelemetryPage/> : activePage === "facilities" ? <FacilitiesPage mode="facilities"/> : activePage === "assets" ? <FacilitiesPage mode="assets"/> : <>
         <div className="page-heading"><div><div className="eyebrow"><span className="live-dot"/> ENERGY OPERATIONS <span className="sample-tag">SAMPLE WORKSPACE</span></div><h1>Good morning, Alex <span>✳</span></h1><p>Here’s what’s happening across your energy portfolio today.</p></div><button className="export-button"><Download size={15}/> Export report</button></div>
         <div className="notice"><div className="notice-icon"><Activity size={17}/></div><div><strong>Demonstration environment</strong><p>Metrics and facilities shown here are sample data. Connect verified meters and assets to display live operational information.</p></div><button aria-label="Dismiss notice">×</button></div>
         <section className="metric-grid">

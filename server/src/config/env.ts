@@ -9,6 +9,9 @@ const envSchema = z.object({
   JWT_ACCESS_SECRET: z.string().min(32).default("local-development-secret-change-before-deploy-000000"),
   ACCESS_TOKEN_TTL: z.string().default("15m"),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(90).default(30),
+  MQTT_BROKER_URL: z.string().url().optional(),
+  MQTT_USERNAME: z.string().optional(),
+  MQTT_PASSWORD: z.string().optional(),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info")
 });
 
@@ -21,6 +24,11 @@ if (!parsed.success) {
 
 if (parsed.data.NODE_ENV === "production" && parsed.data.JWT_ACCESS_SECRET.startsWith("local-development")) {
   console.error("JWT_ACCESS_SECRET must be set to a unique secret in production.");
+  process.exit(1);
+}
+
+if (parsed.data.NODE_ENV === "production" && parsed.data.MQTT_BROKER_URL && !parsed.data.MQTT_BROKER_URL.startsWith("mqtts://")) {
+  console.error("MQTT_BROKER_URL must use mqtts:// in production.");
   process.exit(1);
 }
 

@@ -33,10 +33,13 @@
 - [ ] Bulk import, facility geospatial search, and asset document attachments
 
 ## Milestone 4 — Telemetry and real-time operations
-- [ ] Device credentials and ingestion contracts
-- [ ] MQTT adapter and simulated device publisher
-- [ ] Payload validation, normalization, idempotency, and ingestion observability
-- [ ] Historical readings and real-time UI updates
+- [x] Tenant-bound device provisioning, one-time 256-bit credentials, hash-at-rest storage, and revocation
+- [x] Authenticated HTTP ingestion contract with strict measurement/unit validation and timestamp bounds
+- [x] Optional MQTT subscriber adapter and local simulated meter publisher
+- [x] Idempotent event persistence, tenant/time indexes, and device last-seen tracking
+- [x] Tenant-scoped historical reading API and authenticated Server-Sent Events stream
+- [x] Live telemetry workspace with device provisioning, revocation, stream status, and incoming measurements
+- [ ] Cross-tenant database integration tests, MQTT end-to-end tests, backpressure/dead-letter handling, replay, and retention automation
 
 ## Milestone 5 — Energy intelligence
 - [ ] Consumption aggregation and tariff-aware cost calculation

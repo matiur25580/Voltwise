@@ -3,12 +3,15 @@ import { app } from "./app.js";
 import { connectDatabase } from "./config/database.js";
 import { env } from "./config/env.js";
 import { logger } from "./lib/logger.js";
+import { startMqttAdapter, stopMqttAdapter } from "./modules/telemetry/mqtt.adapter.js";
 
 const server = app.listen(env.PORT, () => {
   logger.info({ port: env.PORT }, "Voltwise API started");
 });
 
-void connectDatabase().catch((error: unknown) => {
+void connectDatabase().then(() => {
+  startMqttAdapter(env.MQTT_BROKER_URL, env.MQTT_USERNAME, env.MQTT_PASSWORD);
+}).catch((error: unknown) => {
   logger.error({ err: error }, "MongoDB connection failed; readiness checks will remain degraded");
 });
 
@@ -24,7 +27,7 @@ const shutdown = (signal: string) => {
       logger.error({ err: error }, "HTTP server shutdown failed");
       process.exitCode = 1;
     }
-    void mongoose.disconnect().finally(() => process.exit());
+    void stopMqttAdapter().finally(() => mongoose.disconnect()).finally(() => process.exit());
   });
 };
 
