@@ -68,3 +68,32 @@
 .telemetry-events table{min-width:680px}
 @media(max-width:1100px){.telemetry-layout{grid-template-columns:1fr}}
 @media(max-width:700px){.telemetry-status{flex-wrap:wrap}.telemetry-status>span:last-child{width:100%;margin-left:17px}.credential-panel{grid-template-columns:1fr}.credential-panel code{max-width:none}.telemetry-heading{align-items:flex-start}}
+
+
+/* Energy analytics workspace */
+.analytics-page{display:grid;gap:15px}
+.analytics-heading{margin-bottom:0}
+.analytics-filters{display:flex;align-items:end;flex-wrap:wrap;gap:12px}
+.analytics-filters label{display:grid;gap:6px;color:#aebdd1;font-size:10px}
+.analytics-filters label svg{display:inline-block;vertical-align:middle;margin-right:5px}
+.analytics-filters input,.analytics-filters select{height:35px;min-width:145px;padding:0 9px;background:#0b1727;border:1px solid #2b3d55;border-radius:7px;color:#e5edf8;font:11px 'DM Sans',sans-serif}
+.analytics-filters .tariff-toggle{display:flex;align-items:center;gap:7px;height:35px}
+.analytics-filters .tariff-toggle input{min-width:0;width:14px;height:14px;accent-color:#5b9bff}
+.analytics-filters button{height:35px}
+.analytics-stats{margin-bottom:0}
+.analytics-chart .chart-wrap{height:300px;margin-top:16px}
+.analytics-bottom{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:15px}
+.anomaly-list{display:grid;margin-top:12px}
+.anomaly-row{display:flex;gap:11px;padding:13px 0;border-bottom:1px solid #203149}
+.anomaly-row:last-child{border-bottom:0}
+.anomaly-severity{width:8px;height:8px;flex:none;border-radius:50%;margin-top:5px;background:#e7ad61}
+.anomaly-severity.high{background:#e4777c;box-shadow:0 0 9px #e4777c66}
+.anomaly-row strong{font-size:11px;color:#e6edf7}
+.anomaly-row p{font-size:10px;color:#9aabc0;line-height:1.5;margin-top:4px}
+.anomaly-row small{display:block;color:#71849e;font-size:9px;margin-top:5px}
+.coverage-list{display:grid;gap:0;margin-top:14px}
+.coverage-list>div{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #203149;font-size:10px;color:#93a5bc}
+.coverage-list strong{color:#e2ebf7;font-size:11px}
+.analytics-disclaimer{font-size:9px;color:#7588a2;line-height:1.65;margin-top:14px}
+@media(max-width:1000px){.analytics-bottom{grid-template-columns:1fr}}
+@media(max-width:650px){.analytics-heading{align-items:flex-start;gap:12px}.analytics-filters{align-items:stretch}.analytics-filters label{flex:1;min-width:42%}.analytics-filters input,.analytics-filters select{width:100%;min-width:0}.analytics-filters button{width:100%}.analytics-chart .chart-wrap{height:250px}}

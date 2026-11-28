@@ -29,7 +29,8 @@
 - [x] Asset lifecycle, status, manufacturer/model, serial, capacity, and metadata fields
 - [x] Tenant-scoped asset CRUD/list/detail APIs with facility ownership validation and soft decommissioning
 - [x] Audit events for facility and asset mutations
-- [x] Responsive authenticated Facilities and Energy Assets registry views with create/register, search, summary counts, and decommission actions\n- [ ] Cross-tenant database integration tests, facility detail/edit workflows, and bulk import
+- [x] Responsive authenticated Facilities and Energy Assets registry views with create/register, search, summary counts, and decommission actions
+- [ ] Cross-tenant database integration tests, facility detail/edit workflows, and bulk import
 - [ ] Bulk import, facility geospatial search, and asset document attachments
 
 ## Milestone 4 — Telemetry and real-time operations
@@ -42,10 +43,12 @@
 - [ ] Cross-tenant database integration tests, MQTT end-to-end tests, backpressure/dead-letter handling, replay, and retention automation
 
 ## Milestone 5 — Energy intelligence
-- [ ] Consumption aggregation and tariff-aware cost calculation
-- [ ] Baseline forecasting and forecast evaluation
-- [ ] Explainable anomaly detection and alert lifecycle
-- [ ] Actual-versus-predicted analytics
+- [x] Tenant-scoped hourly/daily energy import/export and measured demand aggregation
+- [x] Flat-rate cost estimation using an explicitly supplied tariff assumption
+- [x] Explainable rolling-baseline consumption anomaly screening
+- [x] Authenticated Energy analytics workspace with date filters and CSV export
+- [ ] Forecasting model, forecast evaluation, and tariff-calendar integration
+- [ ] Alert acknowledgement, assignment, escalation, and resolution lifecycle
 
 ## Milestone 6 — Flexibility and optimization
 - [ ] Demand-response programmes and events

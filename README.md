@@ -14,7 +14,7 @@ Voltwise brings facility energy data, distributed energy resources, forecasting,
 
 - Organization workspaces, secure identity, granular RBAC, and tenant isolation
 - Facility/site hierarchy and tenant-scoped registries for meters, equipment, solar, batteries, inverters, and EV chargers
-- Device telemetry ingestion via HTTP/MQTT and tenant-scoped real-time operational updates
+- Device telemetry ingestion via HTTP/MQTT, tenant-scoped real-time updates, and energy analytics
 - Energy demand and renewable generation forecasting
 - Consumption anomaly detection and explainable alerts
 - Battery and flexible-load optimization simulation
@@ -51,7 +51,7 @@ Voltwise brings facility energy data, distributed energy resources, forecasting,
 └── package.json            # npm workspaces and root scripts
 ```
 
-## Current registry capabilities\n\nThe authenticated workspace includes Facilities and Energy Assets sections. Organization members with the appropriate permissions can create and manage facilities and register equipment. Facility and asset APIs enforce tenant scoping, unique organization-level codes/tags, facility ownership checks, bounded pagination, and audit events. Asset deletion is a decommissioning transition so registry history is retained. See [docs/api-authentication.md](docs/api-authentication.md) for the current endpoint contract.\n\n## Telemetry quick start
+## Current registry capabilities\n\nThe authenticated workspace includes Facilities and Energy Assets sections. Organization members with the appropriate permissions can create and manage facilities and register equipment. Facility and asset APIs enforce tenant scoping, unique organization-level codes/tags, facility ownership checks, bounded pagination, and audit events. Asset deletion is a decommissioning transition so registry history is retained. See [docs/api-authentication.md](docs/api-authentication.md) for the current endpoint contract.\n\n## Energy analytics\n\nThe authenticated Energy analytics workspace aggregates persisted tenant telemetry into hourly or daily imported/exported energy and measured demand, provides optional flat-rate cost estimates, screens for consumption anomalies, and exports CSV. See [docs/energy-analytics.md](docs/energy-analytics.md) for calculation semantics and limitations.\n\n## Telemetry quick start
 
 See [docs/telemetry-ingestion.md](docs/telemetry-ingestion.md) for device provisioning, the HTTP/MQTT payload contract, and security requirements. After provisioning a device in the Live telemetry workspace, start the local simulator with `DEVICE_CODE` and `DEVICE_KEY` environment variables using `npm run simulate:device`.
 
