@@ -66,3 +66,13 @@ Forecasts and optimization outputs are advisory. Every result should record mode
 ## Hardening still required before production
 
 Configure distributed rate limiting, CSRF protection appropriate to the deployed cookie topology, email verification, password reset, account lockout/abuse monitoring, audit events, session/device management, and transaction-backed registration. Review refresh-token family revocation under concurrent refresh requests and configure MongoDB TTL/index migrations as part of deployment.
+
+
+## Organization context and auditability
+
+Organization context is selected by a verified access-token claim and revalidated against an active `Membership` record for every authenticated request. Organization switching requires an active membership in the target organization, revokes the presented refresh session, and issues a new tenant-scoped session. Member-management queries include the trusted tenant ID in their filters. Security-sensitive membership and switching events are recorded in the tenant-scoped `AuditEvent` collection; secrets and token values are never written to audit metadata.
+
+
+## Invitation security boundary
+
+Organization invitations are tenant-scoped records with a cryptographically random one-time token. Only a SHA-256 token hash is persisted. Creation and revocation require member-management permission; acceptance requires an authenticated user whose normalized email matches the invitation target. The invitee receives only the role explicitly granted by the inviter, and the owner role is never assignable through invitations. The current API returns the plaintext token once to its trusted caller because an email delivery adapter is not yet configured; production deployment must connect a trusted mail provider and avoid exposing or logging that token.
