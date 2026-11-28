@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useAuth } from "./auth/AuthContext";
+import FacilitiesPage from "./FacilitiesPage";
 import AuthScreen from "./auth/AuthScreen";
 import { Activity, ArrowDownRight, ArrowUpRight, BatteryCharging, Building2, ChevronDown, CircleHelp, Command, Download, Gauge, Leaf, Menu, MoreHorizontal, PlugZap, RadioTower, Search, Settings2, ShieldCheck, Sun, Zap } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -26,29 +28,31 @@ function MetricCard({ label, value, note, trend, icon: Icon }: { label: string; 
 
 function Dashboard() {
   const { user, organization, logout } = useAuth();
+  const [activePage, setActivePage] = useState<"overview" | "facilities" | "assets">("overview");
   return <div className="app-shell">
     <aside className="sidebar">
       <div className="brand"><div className="brand-mark"><Zap size={20} fill="currentColor"/></div><div><strong>voltwise</strong><small>ENERGY INTELLIGENCE</small></div></div>
       <div className="workspace"><div className="workspace-icon">N</div><div><strong>{organization?.name ?? "Your organization"}</strong><small>{organization?.role ?? "Enterprise workspace"}</small></div><ChevronDown size={15}/></div>
       <div className="nav-label">WORKSPACE</div>
       <nav>
-        <a className="nav-item active" href="#"><Gauge size={17}/> Overview</a>
-        <a className="nav-item" href="#"><Building2 size={17}/> Facilities</a>
-        <a className="nav-item" href="#"><Activity size={17}/> Energy analytics</a>
-        <a className="nav-item" href="#"><BatteryCharging size={17}/> Energy assets</a>
-        <a className="nav-item" href="#"><PlugZap size={17}/> Demand response</a>
-        <a className="nav-item" href="#"><Leaf size={17}/> Sustainability</a>
+        <button className={`nav-item ${activePage === "overview" ? "active" : ""}`} onClick={() => setActivePage("overview")}><Gauge size={17}/> Overview</button>
+        <button className={`nav-item ${activePage === "facilities" ? "active" : ""}`} onClick={() => setActivePage("facilities")}><Building2 size={17}/> Facilities</button>
+        <button className="nav-item" onClick={() => setActivePage("overview")}><Activity size={17}/> Energy analytics</button>
+        <button className={`nav-item ${activePage === "assets" ? "active" : ""}`} onClick={() => setActivePage("assets")}><BatteryCharging size={17}/> Energy assets</button>
+        <button className="nav-item" onClick={() => setActivePage("overview")}><PlugZap size={17}/> Demand response</button>
+        <button className="nav-item" onClick={() => setActivePage("overview")}><Leaf size={17}/> Sustainability</button>
       </nav>
       <div className="nav-label">MANAGE</div>
       <nav>
-        <a className="nav-item" href="#"><ShieldCheck size={17}/> Alerts & incidents <span className="nav-count">3</span></a>
-        <a className="nav-item" href="#"><Settings2 size={17}/> Settings</a>
+        <button className="nav-item" onClick={() => setActivePage("overview")}><ShieldCheck size={17}/> Alerts & incidents <span className="nav-count">3</span></button>
+        <button className="nav-item" onClick={() => setActivePage("overview")}><Settings2 size={17}/> Settings</button>
       </nav>
       <div className="sidebar-bottom"><div className="support-card"><CircleHelp size={17}/><div><strong>Need a hand?</strong><small>Visit the product guide</small></div></div><div className="user-row"><div className="avatar">U</div><div><strong>{user?.name ?? "Workspace member"}</strong><small>{user?.email ?? "Signed in"}</small></div><button className="logout-button" onClick={() => void logout()}>Sign out</button></div></div>
     </aside>
     <main className="main">
       <header className="topbar"><div className="mobile-brand"><Menu size={19}/> voltwise</div><div className="breadcrumbs">Workspace <span>/</span> <strong>Overview</strong></div><div className="top-actions"><div className="search-box"><Search size={15}/><span>Search anything...</span><kbd>⌘ K</kbd></div><button className="icon-button" aria-label="Help"><CircleHelp size={18}/></button><div className="avatar small">AM</div></div></header>
       <div className="content">
+        {activePage === "facilities" ? <FacilitiesPage mode="facilities"/> : activePage === "assets" ? <FacilitiesPage mode="assets"/> : <>
         <div className="page-heading"><div><div className="eyebrow"><span className="live-dot"/> ENERGY OPERATIONS <span className="sample-tag">SAMPLE WORKSPACE</span></div><h1>Good morning, Alex <span>✳</span></h1><p>Here’s what’s happening across your energy portfolio today.</p></div><button className="export-button"><Download size={15}/> Export report</button></div>
         <div className="notice"><div className="notice-icon"><Activity size={17}/></div><div><strong>Demonstration environment</strong><p>Metrics and facilities shown here are sample data. Connect verified meters and assets to display live operational information.</p></div><button aria-label="Dismiss notice">×</button></div>
         <section className="metric-grid">
@@ -63,6 +67,7 @@ function Dashboard() {
         </section>
         <section className="panel facilities-panel"><div className="panel-heading"><div><h2>Facility performance</h2><p>Sample portfolio snapshot</p></div><button className="text-link">View all facilities <ArrowUpRight size={14}/></button></div><div className="table-wrap"><table><thead><tr><th>FACILITY</th><th>ENERGY CONSUMPTION</th><th>CHANGE</th><th>STATUS</th><th></th></tr></thead><tbody>{facilities.map((facility) => <tr key={facility.name}><td><div className="facility-cell"><span className="facility-icon"><facility.icon size={17}/></span><div><strong>{facility.name}</strong><small>{facility.location}</small></div></div></td><td className="table-value">{facility.usage}</td><td className={facility.change.startsWith("-") ? "positive-text" : "warning-text"}>{facility.change}</td><td><span className={facility.state === "Healthy" ? "status healthy" : "status attention"}><i/>{facility.state}</span></td><td><MoreHorizontal size={18} color="#71819a"/></td></tr>)}</tbody></table></div></section>
         <footer><span>VOLTWISE PLATFORM <b>·</b> FOUNDATION PREVIEW</span><span>Designed for operational clarity <Zap size={12}/></span></footer>
+        </>}
       </div>
     </main>
   </div>;

@@ -8,6 +8,7 @@ import { isDatabaseReady } from "./config/database.js";
 import { logger } from "./lib/logger.js";
 import { authRouter, organizationRouter } from "./modules/identity/index.js";
 import { AuthError } from "./modules/identity/auth.service.js";
+import { assetRouter } from "./modules/assets/asset.routes.js";
 import { ZodError } from "zod";
 
 export const app = express();
@@ -52,6 +53,7 @@ app.get("/api/v1/health", (_req, res) => {
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/organizations", organizationRouter);
+app.use("/api/v1", assetRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: { code: "ROUTE_NOT_FOUND", message: "The requested API route does not exist." } });
