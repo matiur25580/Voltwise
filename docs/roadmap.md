@@ -51,10 +51,12 @@
 - [ ] Alert acknowledgement, assignment, escalation, and resolution lifecycle
 
 ## Milestone 6 — Flexibility and optimization
-- [ ] Demand-response programmes and events
-- [ ] Battery and flexible-load scheduling simulator
-- [ ] Constraint-aware optimization recommendations
-- [ ] Approval, audit, and outcome measurement
+- [x] Demand-response scenario creation and tenant-scoped history
+- [x] Battery dispatch simulator with power, capacity, and reserve-state constraints
+- [x] Explainable interval recommendations and optional indicative tariff estimate
+- [x] Proposal approval/rejection workflow with audit history
+- [x] Time-of-use battery tariff schedule heuristic with SoC, charge/discharge power, and round-trip-efficiency constraints\n- [ ] Solar-aware charging, renewable/load forecasting, EV/HVAC flexibility, and grid constraint optimization
+- [ ] Physical dispatch integration, telemetry-confirmed execution, and outcome measurement
 
 ## Milestone 7 — Maintenance, sustainability, and AI assistant
 - [ ] Equipment health indicators and maintenance work orders
